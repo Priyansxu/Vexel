@@ -23,10 +23,6 @@ intents.message_content = True  # Enable message content intent
 # initialize the Discord bot
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# OPTIONAL -- define the channel ID where the bot should respond. 
-# Otherwise, it will respond to all channels.
-# target_channel_id = "YOUR_TARGET_CHANNEL_ID"  # Replace with the actual channel ID
-
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
