@@ -16,9 +16,9 @@ DISCORD_BOT_TOKEN = os.getenv("YOUR_DISCORD_BOT_TOKEN")
 
 # define the intents for your bot
 intents = discord.Intents.default()
-intents.typing = False  # You can adjust these based on your bot's needs
+intents.typing = False  # you can adjust these based on your bot's needs
 intents.presences = False
-intents.message_content = True  # Enable message content intent
+intents.message_content = True  # enable message content intent
 
 # initialize the Discord bot
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -40,7 +40,7 @@ async def on_message(message):
         if len(api_content) >= 2000:
             await send_paginated_message(message.channel, api_content)
         else:
-            # Otherwise, send the response as-is
+            # otherwise, send the response as-is
             await message.reply(api_content)
     
 # function to send a paginated message
