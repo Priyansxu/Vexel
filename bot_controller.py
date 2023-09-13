@@ -45,7 +45,7 @@ async def on_message(message):
             await send_paginated_message(message.channel, api_content)
         else:
             # Otherwise, send the response as-is
-            await message.channel.send(api_content)
+            await message.reply(api_content)
     
 # function to send a paginated message
 async def send_paginated_message(channel, text):
