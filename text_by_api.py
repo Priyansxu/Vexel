@@ -1,15 +1,17 @@
 import os
 import openai
+
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
+# access the openai api environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # default system message
 system_message = "You are a helpful assistant."
 
 # prompt is text input received by user
-prompt = ""
-# code to receive text from bot_controller.py
-# prompt = //input from bot_controller.py
-
 # completion is request to send to openai api
 def get_response(prompt):
     completion = openai.ChatCompletion.create(
