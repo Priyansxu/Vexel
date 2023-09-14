@@ -29,11 +29,14 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    if message.author == bot.user:
+    if message.author == bot.user: # ignore messages from the bot itself
         return
 
+    # if the message starts with !ask, send the prompt to the API
     if message.content.startswith('!ask'):
+        # get the prompt from the message content
         prompt = message.content[5:].strip()
+        # get the response from the API
         response = get_response(prompt)
         # extract only the content message from the API response
         api_content = response["content"]
@@ -43,15 +46,16 @@ async def on_message(message):
             # otherwise, send the response as-is
             await message.reply(api_content)
     
-# function to send a paginated message
+# splits response message if over Discord's 2000 character limit
 async def send_paginated_message(channel, text):
-    max_chars = 2000  # discord's maximum message length
-    start = 0
+    max_chars = 2000
+    start = 0 # index 0 of text
 
+    # iterate through text in chunks of 2000 characters
     while start < len(text):
-        end = start + max_chars
+        end = start + max_chars # end index of each chunk
         if end > len(text):
-            end = len(text)  # ensure end doesn't go beyond the text length
+            end = len(text)  # prevents out of bounds error
 
         # escape / and > characters before sending
         chunk = text[start:end]
@@ -63,9 +67,8 @@ async def send_paginated_message(channel, text):
             return
         else:
             await channel.send(chunk)
-            start = end
+            start = end # update start index for next chunk
 
-
-# run the bot with your Discord bot token
+# run the bot
 bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler)
 
