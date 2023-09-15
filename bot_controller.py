@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from text_by_api import get_response
+from image_by_api import get_image
 import os
 import logging
 
@@ -45,6 +46,11 @@ async def on_message(message):
         else:
             # otherwise, send the response as-is
             await message.reply(api_content)
+
+    if message.content.startswith('!draw'):
+        prompt = message.content[5:].strip()
+        response = get_image(prompt)
+        await message.reply(response)
     
 # splits response message if over Discord's 2000 character limit
 async def send_paginated_message(channel, text):
