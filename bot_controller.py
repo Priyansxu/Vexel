@@ -66,6 +66,8 @@ async def on_message(message):
                 # send image URL as Discord file attachment
                 await message.reply(file=discord.File(img_file, "output.png"))
 
+                img_file.close() # clean up
+
             else: # if request unsuccessful
                 await message.reply("Failed to fetch the image.")
 
