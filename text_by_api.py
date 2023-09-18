@@ -11,8 +11,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # default system message
 system_message = "You are a helpful assistant. You love to help people."
 
-# prompt is text input received by user
-# completion is request to send to openai api
+"""
+prompt is text input received by user
+completion is request to send to openai api
+"""
 def get_response(prompt):
     try:
         completion = openai.ChatCompletion.create(

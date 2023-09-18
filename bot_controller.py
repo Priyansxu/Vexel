@@ -43,10 +43,9 @@ async def on_message(message):
         response = get_response(prompt)
         # extract only content message from API response
         api_content = response["content"]
-        if len(api_content) >= 2000:
+        if len(api_content) >= 2000: # paginate response if over Discord's character limit
             await send_paginated_message(message.channel, api_content)
         else:
-            # otherwise, send response as-is
             await message.reply(api_content)
 
     # image controller
@@ -73,7 +72,7 @@ async def on_message(message):
         else:
             await message.reply("Image URL not found in the response.")
 
-# splits response message if over Discord's 2000 character limit
+# split response message if over Discord's 2000 character limit
 async def send_paginated_message(channel, text):
     max_chars = 2000
     start = 0 # index 0 of text
@@ -82,7 +81,7 @@ async def send_paginated_message(channel, text):
     while start < len(text):
         end = start + max_chars # end index of each chunk
         if end > len(text):
-            end = len(text)  # prevents out of bounds error
+            end = len(text)  # prevent out of bounds error
 
         # escape / and > characters before sending
         chunk = text[start:end]
