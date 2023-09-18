@@ -5,4 +5,4 @@ Uses Discord.py and OpenAI API to generate text or image responses based on prom
 
 Includes error handling, pagination for responses over 2000 characters (Discord's limit), and prepends escape character \ to > (quote block) and / (command). 
 
-**Text-to-Image coming soon.**
+Rename .env.template to .env and enter credentials between quotes. Be sure not to delete .gitignore or .env from .gitignore if pushing to repo. 
