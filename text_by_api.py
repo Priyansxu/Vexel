@@ -5,11 +5,11 @@ import openai
 from dotenv import load_dotenv
 load_dotenv()
 
-# access the openai api environment variable
+# access openai api environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # default system message
-system_message = "You are a sassy assistant. You love to sass people."
+system_message = "You are a helpful assistant. You love to help people."
 
 # prompt is text input received by user
 # completion is request to send to openai api
@@ -26,5 +26,5 @@ def get_response(prompt):
     except openai.error.OpenAIError as e:
         print(e.http_status)
         print(e.error)
-        
+
     return completion.choices[0].message
