@@ -68,26 +68,25 @@ ready message
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-    
+
 
 """
 main function to process message
 """
 @bot.event
 async def on_message(message):
-
-    if message.content.startswith('!ask'):
-        prompt = message.content[5:].strip()
-        response = get_response(prompt)
-        api_content = response["content"]
+    if message.content.startswith('!ask'): # text controller
+        prompt = message.content[5:].strip() # get prompt from message content
+        response = get_response(prompt) # get response from API
+        api_content = response["content"] # extract only content message from API response
         
-        if len(api_content) >= 2000:
+        if len(api_content) >= 2000: # paginate response if over Discord's character limit
             await send_paginated_message(message.channel, api_content, prompt, message)
         else:
             view = draw_view(prompt, message)
             await message.reply(api_content, view=view)
 
-    if message.content.startswith('!draw'):
+    if message.content.startswith('!draw'): # image controller
         await draw_image(message)
 
 """      
@@ -107,7 +106,7 @@ async def send_paginated_message(channel, text, prompt, message):
         chunk = chunk.replace('>', '\>')
 
         if end >= len(text):
-            view = draw_view(prompt, message)
+            view = draw_view(prompt, message) # creates Draw button
             await channel.send(chunk, view=view)
         else:
             await channel.send(chunk)
@@ -134,5 +133,7 @@ async def draw_image(message):
     else:
         await message.reply("Failed to fetch the image.")
 
-# run bot
+"""
+run bot
+"""
 bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler)
