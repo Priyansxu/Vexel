@@ -96,6 +96,9 @@ async def on_message(message):
 
     
     if message.content.startswith('!draw'): # image controller using Diffusers
+        await draw_image(message)
+
+        """     
         prompt = message.content[5:].strip()
         images = pipe(
             prompt, 
@@ -117,8 +120,11 @@ async def on_message(message):
 
         # close the new BytesIO object
         img_file.close()
+        """
 
-# split response message if over Discord's 2000 character limit
+"""      
+split response message if over Discord's 2000 character limit
+"""
 async def send_paginated_message(channel, text):
     max_chars = 2000
     start = 0 # index 0 of text
@@ -134,13 +140,44 @@ async def send_paginated_message(channel, text):
         chunk = chunk.replace('/', '\/')  # replace / with \/
         chunk = chunk.replace('>', '\>')  # replace > with \>
 
+
+
+        """
         if text[end:end + 1] == '\0':  # check for null character
             await channel.send(chunk)
             return
         else:
             await channel.send(chunk)
             start = end # update start index for next chunk
+        """
 
-# run bot
+"""
+draw image
+"""
+async def draw_image(message):
+    prompt = message.content[5:].strip()
+    images = pipe(
+        prompt, 
+        width=2048,
+        height=2048,
+        prior_timesteps=DEFAULT_STAGE_C_TIMESTEPS,
+        prior_guidance_scale=4.0,
+        num_images_per_prompt=1
+    ).images
+
+    # hold image in ram
+    img_byte_arr = io.BytesIO()
+    images[0].save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+
+    # send as Discord file attachment
+    img_file = io.BytesIO(img_byte_arr)
+    await message.reply(file=discord.File(img_file, "generated_image.png"))
+
+    # close the new BytesIO object
+    img_file.close()
+
+"""
+run bot
+"""
 bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler)
-
