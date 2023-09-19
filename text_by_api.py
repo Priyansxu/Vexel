@@ -9,8 +9,12 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # default system message
-system_message = "You are a helpful assistant. You love to help people. Midjourney is an AI image generation tool. Midjourney prompts should be 25 words or less."
-
+# default system message
+system_message = "You are a helpful assistant. You love to help people. \
+                    Prompts are for a stable diffusion ai image generator and should be 25 words or less. \
+                        Prompts should include visual or effect parameters such as 4K, blender, photorealistic, \
+                            grainy, and so on. If someone asks for a prompt, give them one, but answer normally \
+                                if they don't say prompt first."
 """
 prompt is text input received by user
 completion is request to send to openai api
