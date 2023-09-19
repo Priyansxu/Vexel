@@ -54,23 +54,24 @@ button callback class
 class DrawButton(ui.Button['DrawView']):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer() # acknowledge the interaction
-        await draw_image(self.view.message)
+        await draw_image(self.view.api_content, self.view.message)
 
 """
 view class containing button
 """
 class DrawView(ui.View):
-    def __init__(self, prompt, message):
+    def __init__(self, prompt, message, api_content):
         super().__init__()
         self.prompt = prompt
         self.message = message
+        self.api_content = api_content
         self.add_item(DrawButton(label='Draw'))
 
 """
 helper function to create a view
 """
-def draw_view(prompt, message):
-    return DrawView(prompt=prompt, message=message)
+def draw_view(prompt, message, api_content):
+    return DrawView(prompt=prompt, message=message, api_content=api_content)
 
 """
 ready message
@@ -84,50 +85,28 @@ main function to process message
 """
 @bot.event
 async def on_message(message):
+    prompt = message.content[5:].strip()
     if message.content.startswith('!ask'): # text controller
-        prompt = message.content[5:].strip() # get prompt from message content
         response = get_response(prompt) # get response from API
         api_content = response["content"] # extract only content message from API response
 
         if len(api_content) >= 2000: # paginate response if over Discord's character limit
-            await send_paginated_message(message.channel, api_content)
+            await send_paginated_message(message.channel, api_content, prompt, message)
         else:
-            await message.reply(api_content)
+            view = draw_view(prompt, message, api_content)
+            await message.reply(api_content, view=view)
 
     
     if message.content.startswith('!draw'): # image controller using Diffusers
-        await draw_image(message)
-
-        """     
-        prompt = message.content[5:].strip()
-        images = pipe(
-            prompt, 
-            width=2048,
-            height=2048,
-            prior_timesteps=DEFAULT_STAGE_C_TIMESTEPS,
-            prior_guidance_scale=4.0,
-            num_images_per_prompt=1
-        ).images
-
-        # hold image in ram
-        img_byte_arr = io.BytesIO()
-        images[0].save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
-
-        # send as Discord file attachment
-        img_file = io.BytesIO(img_byte_arr)
-        await message.reply(file=discord.File(img_file, "generated_image.png"))
-
-        # close the new BytesIO object
-        img_file.close()
-        """
+        await draw_image(prompt, message)
 
 """      
 split response message if over Discord's 2000 character limit
 """
-async def send_paginated_message(channel, text):
+async def send_paginated_message(channel, api_content, prompt, message):
     max_chars = 2000
     start = 0 # index 0 of text
+    text = api_content
 
     # iterate through text in chunks of 2000 characters
     while start < len(text):
@@ -141,6 +120,13 @@ async def send_paginated_message(channel, text):
         chunk = chunk.replace('>', '\>')  # replace > with \>
 
 
+        if end >= len(text):
+            view = draw_view(prompt, message, api_content) # creates Draw button
+            await channel.send(chunk, view=view)
+        else:
+            await message.reply(chunk)
+
+        start = end
 
         """
         if text[end:end + 1] == '\0':  # check for null character
@@ -154,8 +140,8 @@ async def send_paginated_message(channel, text):
 """
 draw image
 """
-async def draw_image(message):
-    prompt = message.content[5:].strip()
+async def draw_image(prompt, message):
+    await message.reply("Drawing...")
     images = pipe(
         prompt, 
         width=2048,
