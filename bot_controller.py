@@ -84,24 +84,18 @@ main function to process message
 """
 @bot.event
 async def on_message(message):
-    if message.author == bot.user: # ignore messages from bot itself
-        return
+    if message.content.startswith('!ask'): # text controller
+        prompt = message.content[5:].strip() # get prompt from message content
+        response = get_response(prompt) # get response from API
+        api_content = response["content"] # extract only content message from API response
 
-    # text controller
-    if message.content.startswith('!ask'):
-        # get prompt from message content
-        prompt = message.content[5:].strip()
-        # get response from API
-        response = get_response(prompt)
-        # extract only content message from API response
-        api_content = response["content"]
         if len(api_content) >= 2000: # paginate response if over Discord's character limit
             await send_paginated_message(message.channel, api_content)
         else:
             await message.reply(api_content)
 
-    # image controller using Diffusers
-    if message.content.startswith('!draw'):
+    
+    if message.content.startswith('!draw'): # image controller using Diffusers
         prompt = message.content[5:].strip()
         images = pipe(
             prompt, 
