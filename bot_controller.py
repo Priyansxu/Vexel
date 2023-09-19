@@ -1,4 +1,6 @@
 import discord
+from discord import ui
+from discord.ui import Button, View
 from discord.ext import commands
 from text_by_api import get_response
 from image_by_api import get_image
@@ -7,96 +9,131 @@ import logging
 import requests
 import io
 
-# debug logging
+"""
+debug logging
+"""
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
-# load environment variables from .env file
+"""
+load environment variables from .env file
+"""
 from dotenv import load_dotenv
 load_dotenv()
 
-# access discord bot token environment variable
+"""
+access discord bot token environment variable
+"""
 DISCORD_BOT_TOKEN = os.getenv("YOUR_DISCORD_BOT_TOKEN")
 
-# define bot intents
+"""
+define bot intents
+"""
 intents = discord.Intents.default() 
-intents.typing = False # can adjust these based on bot's needs
+intents.typing = False
 intents.presences = False
-intents.message_content = True # enable message content intent
+intents.message_content = True
 
-# initialize bot
+"""
+initialize bot
+"""
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+"""
+button callback class
+"""
+class DrawButton(ui.Button['DrawView']):
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer() # acknowledge the interaction
+        await draw_image(self.view.message)
+
+"""
+view class containing button
+"""
+class DrawView(ui.View):
+    def __init__(self, prompt, message):
+        super().__init__()
+        self.prompt = prompt
+        self.message = message
+        self.add_item(DrawButton(label='Draw'))
+        
+"""
+helper function to create a view
+"""
+def draw_view(prompt, message):
+    return DrawView(prompt=prompt, message=message)
+
+"""
+ready message
+"""
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
 
+
+"""
+main function to process message
+"""
 @bot.event
 async def on_message(message):
-    if message.author == bot.user: # ignore messages from bot itself
-        return
-
-    # text controller
-    if message.content.startswith('!ask'):
-        # get prompt from message content
-        prompt = message.content[5:].strip()
-        # get response from API
-        response = get_response(prompt)
-        # extract only content message from API response
-        api_content = response["content"]
-        if len(api_content) >= 2000: # paginate response if over Discord's character limit
-            await send_paginated_message(message.channel, api_content)
-        else:
-            await message.reply(api_content)
-
-    # image controller
-    if message.content.startswith('!draw'):
-        prompt = message.content[5:].strip()
-        response = get_image(prompt)
+    if message.content.startswith('!ask'): # text controller
+        prompt = message.content[5:].strip() # get prompt from message content
+        response = get_response(prompt) # get response from API
+        api_content = response["content"] # extract only content message from API response
         
-        if response.startswith("https"): # check for valid URL
-            img_url = response
-
-            # download image from the URL
-            img_response = requests.get(img_url)
-
-            if img_response.status_code == 200: # if request successful
-                img_bytes = img_response.content
-                img_file = io.BytesIO(img_bytes) # create file-like binary stream object for discord.File to send (expects file-like object)
-
-                # send image URL as Discord file attachment
-                await message.reply(file=discord.File(img_file, "output.png"))
-
-                img_file.close() # clean up
-
-            else: # if request unsuccessful
-                await message.reply("Failed to fetch the image.")
-
+        if len(api_content) >= 2000: # paginate response if over Discord's character limit
+            await send_paginated_message(message.channel, api_content, prompt, message)
         else:
-            await message.reply("Image URL not found in the response.")
+            view = draw_view(prompt, message)
+            await message.reply(api_content, view=view)
 
-# split response message if over Discord's 2000 character limit
-async def send_paginated_message(channel, text):
+    if message.content.startswith('!draw'): # image controller
+        await draw_image(message)
+
+"""      
+split response message if over Discord's 2000 character limit
+"""
+async def send_paginated_message(channel, text, prompt, message):
     max_chars = 2000
-    start = 0 # index 0 of text
+    start = 0
 
-    # iterate through text in chunks of 2000 characters
     while start < len(text):
-        end = start + max_chars # end index of each chunk
+        end = start + max_chars
         if end > len(text):
-            end = len(text)  # prevent out of bounds error
+            end = len(text)
 
-        # escape / and > characters before sending
         chunk = text[start:end]
-        chunk = chunk.replace('/', '\/')  # replace / with \/
-        chunk = chunk.replace('>', '\>')  # replace > with \>
+        chunk = chunk.replace('/', '\/')
+        chunk = chunk.replace('>', '\>')
 
-        if text[end:end + 1] == '\0':  # check for null character
-            await channel.send(chunk)
-            return
+        if end >= len(text):
+            view = draw_view(prompt, message) # creates Draw button
+            await channel.send(chunk, view=view)
         else:
             await channel.send(chunk)
-            start = end # update start index for next chunk
 
-# run bot
+        start = end
+
+"""
+draw image
+"""
+async def draw_image(message):
+    prompt = message.content[5:].strip()
+    response = get_image(prompt)
+
+    if response.startswith("https"):
+        img_url = response
+
+    img_response = requests.get(img_url)
+
+    if img_response.status_code == 200:
+        img_bytes = img_response.content
+        img_file = io.BytesIO(img_bytes)
+        await message.reply(file=discord.File(img_file, "output.png"))
+        img_file.close()
+    else:
+        await message.reply("Failed to fetch the image.")
+
+"""
+run bot
+"""
 bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler)
-
