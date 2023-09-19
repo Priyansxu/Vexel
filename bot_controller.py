@@ -6,9 +6,16 @@ import os
 import logging
 import requests
 import io
+import torch
+from diffusers import AutoPipelineForText2Image
+from diffusers.pipelines.wuerstchen import DEFAULT_STAGE_C_TIMESTEPS
+from PIL import Image
 
 # debug logging
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+
+# initialize text-to-image pipeline
+pipe = AutoPipelineForText2Image.from_pretrained("warp-ai/wuerstchen", torch_dtype=torch.float16).to("cuda")
 
 # load environment variables from .env file
 from dotenv import load_dotenv
@@ -48,31 +55,30 @@ async def on_message(message):
         else:
             await message.reply(api_content)
 
-    # image controller
+    # image controller using Diffusers
     if message.content.startswith('!draw'):
         prompt = message.content[5:].strip()
-        response = get_image(prompt)
-        
-        if response.startswith("https"): # check for valid URL
-            img_url = response
+        images = pipe(
+            prompt, 
+            width=1024,
+            height=1536,
+            prior_timesteps=DEFAULT_STAGE_C_TIMESTEPS,
+            prior_guidance_scale=4.0,
+            num_images_per_prompt=1
+        ).images
 
-            # download image from the URL
-            img_response = requests.get(img_url)
+        # hold image in ram
+        img_byte_arr = io.BytesIO()
+        images[0].save(img_byte_arr, format='PNG')
+        img_byte_arr = img_byte_arr.getvalue()
 
-            if img_response.status_code == 200: # if request successful
-                img_bytes = img_response.content
-                img_file = io.BytesIO(img_bytes) # create file-like binary stream object for discord.File to send (expects file-like object)
+        # send as Discord file attachment
+        img_file = io.BytesIO(img_byte_arr)
+        await message.reply(file=discord.File(img_file, "generated_image.png"))
 
-                # send image URL as Discord file attachment
-                await message.reply(file=discord.File(img_file, "output.png"))
-
-                img_file.close() # clean up
-
-            else: # if request unsuccessful
-                await message.reply("Failed to fetch the image.")
-
-        else:
-            await message.reply("Image URL not found in the response.")
+        # close the BytesIO objects
+        img_byte_arr.close()
+        img_file.close()
 
 # split response message if over Discord's 2000 character limit
 async def send_paginated_message(channel, text):
