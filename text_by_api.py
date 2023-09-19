@@ -9,7 +9,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # default system message
-system_message = "You are a helpful assistant. You love to help people."
+system_message = "You are a helpful assistant. You love to help people. Midjourney is an AI image generation tool."
 
 """
 prompt is text input received by user

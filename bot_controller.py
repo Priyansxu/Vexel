@@ -1,4 +1,6 @@
 import discord
+from discord import ui
+from discord.ui import Button, View
 from discord.ext import commands
 from text_by_api import get_response
 from image_by_api import get_image
@@ -12,32 +14,74 @@ from diffusers.pipelines.wuerstchen import DEFAULT_STAGE_C_TIMESTEPS
 import diffusers
 from PIL import Image
 
-# debug logging
+"""
+debug logging
+"""
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
-# initialize text-to-image pipeline
+"""
+initialize text-to-image pipeline
+"""
 pipe = AutoPipelineForText2Image.from_pretrained("warp-ai/wuerstchen", torch_dtype=torch.float16).to("cuda")
 
-# load environment variables from .env file
+"""
+load environment variables from .env file
+"""
 from dotenv import load_dotenv
 load_dotenv()
 
-# access discord bot token environment variable
+"""
+access discord bot token environment variable
+"""
 DISCORD_BOT_TOKEN = os.getenv("YOUR_DISCORD_BOT_TOKEN")
 
-# define bot intents
+"""
+define bot intents
+"""
 intents = discord.Intents.default() 
 intents.typing = False # can adjust these based on bot's needs
 intents.presences = False
 intents.message_content = True # enable message content intent
 
-# initialize bot
+"""
+initialize bot
+"""
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+"""
+button callback class
+"""
+class DrawButton(ui.Button['DrawView']):
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer() # acknowledge the interaction
+        await draw_image(self.view.message)
+
+"""
+view class containing button
+"""
+class DrawView(ui.View):
+    def __init__(self, prompt, message):
+        super().__init__()
+        self.prompt = prompt
+        self.message = message
+        self.add_item(DrawButton(label='Draw'))
+
+"""
+helper function to create a view
+"""
+def draw_view(prompt, message):
+    return DrawView(prompt=prompt, message=message)
+
+"""
+ready message
+"""
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
 
+"""
+main function to process message
+"""
 @bot.event
 async def on_message(message):
     if message.author == bot.user: # ignore messages from bot itself
