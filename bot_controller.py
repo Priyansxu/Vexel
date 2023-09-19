@@ -61,8 +61,8 @@ async def on_message(message):
         prompt = message.content[5:].strip()
         images = pipe(
             prompt, 
-            width=1024,
-            height=1536,
+            width=2048,
+            height=2048,
             prior_timesteps=DEFAULT_STAGE_C_TIMESTEPS,
             prior_guidance_scale=4.0,
             num_images_per_prompt=1
