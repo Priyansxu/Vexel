@@ -9,6 +9,7 @@ import io
 import torch
 from diffusers import AutoPipelineForText2Image
 from diffusers.pipelines.wuerstchen import DEFAULT_STAGE_C_TIMESTEPS
+import diffusers
 from PIL import Image
 
 # debug logging
@@ -76,8 +77,7 @@ async def on_message(message):
         img_file = io.BytesIO(img_byte_arr)
         await message.reply(file=discord.File(img_file, "generated_image.png"))
 
-        # close the BytesIO objects
-        img_byte_arr.close()
+        # close the new BytesIO object
         img_file.close()
 
 # split response message if over Discord's 2000 character limit
