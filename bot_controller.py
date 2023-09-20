@@ -3,7 +3,6 @@ from discord import ui
 from discord.ui import Button, View
 from discord.ext import commands
 from text_by_api import get_response
-from image_by_api import get_image
 import os
 import logging
 import requests
