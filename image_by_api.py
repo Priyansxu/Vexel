@@ -1,14 +1,20 @@
 import openai
 import os
 
-# load environment variables from .env file
+"""
+load environment variables from .env file
+"""
 from dotenv import load_dotenv
 load_dotenv()
 
-# access the openai api environment variable
+"""
+access the openai api environment variable
+"""
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# function to handle image requests
+"""
+image request controller
+"""
 def get_image(text):
     try:
         response = openai.Image.create(
