@@ -158,7 +158,8 @@ async def draw_image(prompt, message):
 
     # send as Discord file attachment
     img_file = io.BytesIO(img_byte_arr)
-    await message.reply(file=discord.File(img_file, "generated_image.png"))
+    view = draw_view(prompt, message, api_content=prompt) # format Draw button
+    await message.reply(file=discord.File(img_file, "generated_image.png"), view=view)
 
     # close the new BytesIO object
     img_file.close()
