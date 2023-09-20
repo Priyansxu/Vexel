@@ -3,6 +3,7 @@ from discord import ui
 from discord.ui import Button, View
 from discord.ext import commands
 from text_by_api import get_response
+from edit_by_api import get_edit
 import os
 import logging
 import requests
@@ -101,6 +102,9 @@ async def on_message(message):
     if message.content.startswith('!draw'): # image controller using Diffusers
         await draw_image(prompt, message)
 
+    if message.content.startswith('!edit'): # edit controller using API
+        await edit_image(prompt, message)
+
 """      
 split response message if over Discord's 2000 character limit
 """
@@ -157,6 +161,45 @@ async def draw_image(prompt, message):
     view = draw_view(prompt, message, api_content=prompt) # format Draw button
     await message.reply(file=discord.File(img_file, "output.png"), view=view) # reply with image, and view for button
     img_file.close() # close the new BytesIO object
+
+"""
+edit image
+"""
+async def edit_image(prompt, message):
+    await message.reply("Editing...") # command acknowledge message
+    filename = "image.png"
+
+    if len(message.attachments) > 0:
+        attachment = message.attachments[0] # retrieve attachment from message
+        url = attachment.url # retrieve url from attachment
+        await message.reply(f"{url}") # replies with original image
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(filename, 'wb') as f:
+                f.write(response.content)
+            convert_image_to_rgba(filename)
+
+    img_url = get_edit(prompt, filename) # send edit request to api
+    # await message.reply(f"{img_url}") # testing function to ensure url is returned
+    img_response = requests.get(img_url)
+
+    if img_response.status_code == 200:
+        img_bytes = img_response.content # hold image in ram
+        img_file = io.BytesIO(img_bytes) # send as Discord file attachment
+        # view = draw_view(prompt, message, api_content=prompt) # format Draw button
+        await message.reply(file=discord.File(img_file, "output.png")) #, view=view) # reply with image, and view for button
+        img_file.close() # close the new BytesIO object
+    else:
+        await message.reply("Failed to fetch the image.")
+
+"""
+helper function to convert images to RGBA for openai api editing
+"""
+def convert_image_to_rgba(filename):
+    with Image.open(filename) as im:
+        if im.mode != 'RGBA':
+            im = im.convert('RGBA')
+        im.save(filename)
 
 """
 run bot
