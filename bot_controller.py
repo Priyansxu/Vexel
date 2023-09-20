@@ -85,7 +85,9 @@ main function to process message
 """
 @bot.event
 async def on_message(message):
-    prompt = message.content[5:].strip()
+        
+    prompt = message.content[5:].strip() # get prompt from message content
+    
     if message.content.startswith('!ask'): # text controller
         response = get_response(prompt) # get response from API
         api_content = response["content"] # extract only content message from API response
@@ -108,14 +110,12 @@ async def send_paginated_message(channel, api_content, prompt, message):
     start = 0 # index 0 of text
     text = api_content
 
-    # iterate through text in chunks of 2000 characters
-    while start < len(text):
+    while start < len(text): # iterate through text in chunks of 2000 characters
         end = start + max_chars # end index of each chunk
         if end > len(text):
-            end = len(text)  # prevent out of bounds error
-
-        # escape / and > characters before sending
-        chunk = text[start:end]
+            end = len(text) # prevent out of bounds error
+        
+        chunk = text[start:end] # escape / and > characters before sending
         chunk = chunk.replace('/', '\/')  # replace / with \/
         chunk = chunk.replace('>', '\>')  # replace > with \>
 
@@ -141,7 +141,7 @@ async def send_paginated_message(channel, api_content, prompt, message):
 draw image
 """
 async def draw_image(prompt, message):
-    await message.reply("Drawing...")
+    await message.reply("Drawing...") # command acknowledge message
     images = pipe(
         prompt, 
         width=2048,
@@ -151,18 +151,13 @@ async def draw_image(prompt, message):
         num_images_per_prompt=1
     ).images
 
-    # hold image in ram
-    img_byte_arr = io.BytesIO()
-    images[0].save(img_byte_arr, format='PNG')
+    img_byte_arr = io.BytesIO() # hold image in ram
+    images[0].save(img_byte_arr, format='PNG') # save file, convert from byte array to PNG
     img_byte_arr = img_byte_arr.getvalue()
-
-    # send as Discord file attachment
-    img_file = io.BytesIO(img_byte_arr)
+    img_file = io.BytesIO(img_byte_arr) # send as Discord file attachment
     view = draw_view(prompt, message, api_content=prompt) # format Draw button
-    await message.reply(file=discord.File(img_file, "generated_image.png"), view=view)
-
-    # close the new BytesIO object
-    img_file.close()
+    await message.reply(file=discord.File(img_file, "output.png"), view=view) # reply with image, and view for button
+    img_file.close() # close the new BytesIO object
 
 """
 run bot
