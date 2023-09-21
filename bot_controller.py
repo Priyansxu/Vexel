@@ -177,9 +177,14 @@ async def edit_image(prompt, message):
         if response.status_code == 200:
             with open(filename, 'wb') as f:
                 f.write(response.content)
-            convert_image_to_rgba(filename)
+            check_and_resize_image(filename)
+            await message.reply(content="Resized", file=discord.File("img_resized.png", "output.png"))
+            convert_image_to_rgba("img_resized.png")
+            await message.reply(content="Converted to RGBA", file=discord.File("img_rgba.png", "output.png"))
+            make_image_transparent("img_rgba.png")
+            await message.reply(content="Parts made transparent", file=discord.File("img_transparent.png", "output.png"))
 
-    img_url = get_edit(prompt, filename) # send edit request to api
+    img_url = get_edit(prompt, "img_transparent.png") # send edit request to api
     # await message.reply(f"{img_url}") # testing function to ensure url is returned
     img_response = requests.get(img_url)
 
@@ -187,19 +192,74 @@ async def edit_image(prompt, message):
         img_bytes = img_response.content # hold image in ram
         img_file = io.BytesIO(img_bytes) # send as Discord file attachment
         # view = draw_view(prompt, message, api_content=prompt) # format Draw button
-        await message.reply(file=discord.File(img_file, "output.png")) #, view=view) # reply with image, and view for button
+        await message.reply(content="Finished", file=discord.File(img_file, "output.png")) #, view=view) # reply with image, and view for button
         img_file.close() # close the new BytesIO object
     else:
         await message.reply("Failed to fetch the image.")
 
 """
-helper function to convert images to RGBA for openai api editing
+helper functions to convert images to RGBA, transparent, and <= 4MB for openai api editing
 """
 def convert_image_to_rgba(filename):
-    with Image.open(filename) as im:
-        if im.mode != 'RGBA':
-            im = im.convert('RGBA')
-        im.save(filename)
+    img = Image.open(filename)
+    if img.mode != 'RGBA':
+        img = img.convert('RGBA')
+    img.save("img_rgba.png")
+    img.close()
+
+def make_image_transparent(filename, corner_size=450):
+    img = Image.open(filename)
+    img = img.convert('RGBA')
+    datas = img.getdata()
+    width, height = img.size
+    new_data = []
+    for y in range(height):
+        for x in range(width):
+            data = datas[y * width + x]
+            if (x < corner_size and y < corner_size) or (x < corner_size and y >= height - corner_size) or (x >= width - corner_size and y < corner_size) or (x >= width - corner_size and y >= height - corner_size):
+                new_data.append((data[0], data[1], data[2], 0))
+            else:
+                new_data.append(data)
+    img.putdata(new_data)
+    img.save("img_transparent.png")
+    img.close()
+
+"""
+def make_image_transparent(filename):
+    with Image.open(filename) as img:
+        data = img.getdata()
+        new_data = []
+        for item in data:
+            if item[0] in list (range(200, 256)):
+                new_data.append((item[0], item[1], item[2], 0))
+            else:
+                new_data.append(item)
+        img.putdata(new_data)
+        img.save(filename)
+"""
+
+def resize_image(filename, base_width=1024):
+    img = Image.open(filename)
+    w_percent = base_width / float(img.size[0])
+    h_size = int(float(img.size[1]) * float(w_percent))
+    img = img.resize((base_width, h_size), Image.LANCZOS)
+    img.save("img_resized.png")
+    img.close()
+
+def check_and_resize_image(filename):
+    max_size = 4 * 1024 * 1024  # 4MB
+    resize_image(filename)  # First resize the image
+    file_size = os.path.getsize("img_resized.png")  # check the file size
+
+    # if still over the limit, resize again or use more aggressive settings
+    while file_size > max_size:
+        resize_image("img_resized.png")  # resize again
+        file_size = os.path.getsize("img_resized.png")  # check file size again
+
+    img = Image.open("img_resized.png")
+    img.save("img_resized.png")
+    img.close()
+
 
 """
 run bot
