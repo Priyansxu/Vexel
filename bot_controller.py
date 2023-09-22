@@ -7,12 +7,16 @@ from edit_by_api import get_edit
 import os
 import logging
 import requests
+import aiohttp
+import asyncio
 import io
 import torch
 from diffusers import AutoPipelineForText2Image
 from diffusers.pipelines.wuerstchen import DEFAULT_STAGE_C_TIMESTEPS
 import diffusers
 from PIL import Image
+import random
+import math
 
 """
 debug logging
@@ -173,10 +177,10 @@ async def edit_image(prompt, message):
         attachment = message.attachments[0] # retrieve attachment from message
         url = attachment.url # retrieve url from attachment
         await message.reply(f"{url}") # replies with original image
-        response = requests.get(url)
-        if response.status_code == 200:
+        response = await download_image(url)
+        if response is not None:
             with open(filename, 'wb') as f:
-                f.write(response.content)
+                f.write(response)
             check_and_resize_image(filename)
             await message.reply(content="Resized", file=discord.File("img_resized.png", "output.png"))
             convert_image_to_rgba("img_resized.png")
@@ -186,11 +190,10 @@ async def edit_image(prompt, message):
 
     img_url = get_edit(prompt, "img_transparent.png") # send edit request to api
     # await message.reply(f"{img_url}") # testing function to ensure url is returned
-    img_response = requests.get(img_url)
+    img_response = await download_image(img_url)
 
-    if img_response.status_code == 200:
-        img_bytes = img_response.content # hold image in ram
-        img_file = io.BytesIO(img_bytes) # send as Discord file attachment
+    if img_response is not None:
+        img_file = io.BytesIO(img_response) # send as Discord file attachment
         # view = draw_view(prompt, message, api_content=prompt) # format Draw button
         await message.reply(content="Finished", file=discord.File(img_file, "output.png")) #, view=view) # reply with image, and view for button
         img_file.close() # close the new BytesIO object
@@ -207,6 +210,42 @@ def convert_image_to_rgba(filename):
     img.save("img_rgba.png")
     img.close()
 
+"""
+creates transparent circles randomly over image
+"""
+def make_image_transparent(filename, num_circles=3, min_radius=150, max_radius=150):
+    img = Image.open(filename)
+    datas = img.getdata()
+    width, height = img.size
+    new_data = []
+    
+    # generate random circles
+    circles = [(random.randint(0, width), random.randint(0, height), random.randint(min_radius, max_radius)) for _ in range(num_circles)]
+
+    for y in range(height):
+        for x in range(width):
+            data = datas[y * width + x]
+            
+            # check if (x, y) is inside any of the circles
+            inside_circle = False
+            for cx, cy, r in circles:
+                if math.sqrt((x - cx)**2 + (y - cy)**2) <= r:
+                    inside_circle = True
+                    break
+            
+            if inside_circle:
+                new_data.append((data[0], data[1], data[2], 0))
+            else:
+                new_data.append(data)
+                
+    img.putdata(new_data)
+    img.save("img_transparent.png")
+    img.close()
+
+'''
+"""
+creates transparent squares in the corners of the image based on corner_size
+"""
 def make_image_transparent(filename, corner_size=450):
     img = Image.open(filename)
     img = img.convert('RGBA')
@@ -223,7 +262,11 @@ def make_image_transparent(filename, corner_size=450):
     img.putdata(new_data)
     img.save("img_transparent.png")
     img.close()
-
+'''
+    
+'''
+"""
+creates transparent circles in range 200-256
 """
 def make_image_transparent(filename):
     with Image.open(filename) as img:
@@ -236,7 +279,7 @@ def make_image_transparent(filename):
                 new_data.append(item)
         img.putdata(new_data)
         img.save(filename)
-"""
+'''
 
 def resize_image(filename, base_width=1024):
     img = Image.open(filename)
@@ -260,6 +303,15 @@ def check_and_resize_image(filename):
     img.save("img_resized.png")
     img.close()
 
+async def download_image(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                image_data = await resp.read()
+                return image_data
+            else:
+                print(f"Failed to download image: status code {resp.status}")
+                return None
 
 """
 run bot

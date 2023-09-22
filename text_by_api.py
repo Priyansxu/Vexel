@@ -12,7 +12,6 @@ access openai api environment variable
 """
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
 """
 prompt is text input received by user
 completion is request to send to openai api
