@@ -213,7 +213,7 @@ def convert_image_to_rgba(filename):
 """
 creates transparent circles randomly over image
 """
-def make_image_transparent(filename, num_circles=3, min_radius=150, max_radius=150):
+def make_image_transparent(filename, num_circles=3, min_radius=300, max_radius=300):
     img = Image.open(filename)
     datas = img.getdata()
     width, height = img.size
