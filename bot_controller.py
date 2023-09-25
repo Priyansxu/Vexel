@@ -168,26 +168,30 @@ async def edit_image(prompt, message):
     if len(message.attachments) > 0:
         attachment = message.attachments[0] # retrieve attachment from message
         url = attachment.url # retrieve url from attachment
-        await message.reply(f"{url}") # replies with original image
+        # await message.reply(f"{url}") # replies with original image
         response = await download_image(url)
         if response is not None:
             with open(filename, 'wb') as f:
                 f.write(response)
             check_and_resize_image(filename)
-            await message.reply(content="Resized", file=discord.File("img_resized.png", "output.png"))
+            # await message.reply(content="Resized", file=discord.File("img_resized.png", "output.png"))
             convert_image_to_rgba("img_resized.png")
-            await message.reply(content="Converted to RGBA", file=discord.File("img_rgba.png", "output.png"))
+            # await message.reply(content="Converted to RGBA", file=discord.File("img_rgba.png", "output.png"))
             make_image_transparent("img_rgba.png")
-            await message.reply(content="Parts made transparent", file=discord.File("img_transparent.png", "output.png"))
+            await message.reply(content="Edit Area", file=discord.File("img_transparent.png", "output.png"))
 
-    img_url = get_edit(prompt, "img_transparent.png") # send edit request to api
+    if prompt:
+        img_url = get_edit("img_rgba.png", "img_transparent.png", prompt) # send edit request to api with prompt
+    else:
+        img_url = get_edit("img_rgba.png", "img_transparent.png") # send edit request to api without prompt
+
     # await message.reply(f"{img_url}") # testing function to ensure url is returned
     img_response = await download_image(img_url)
 
     if img_response is not None:
         img_file = io.BytesIO(img_response) # send as Discord file attachment
         # view = draw_view(prompt, message, api_content=prompt) # format Draw button
-        await message.reply(content="Finished", file=discord.File(img_file, "output.png")) #, view=view) # reply with image, and view for button
+        await message.reply(content="Edit", file=discord.File(img_file, "output.png")) #, view=view) # reply with image, and view for button
         img_file.close() # close the new BytesIO object
     else:
         await message.reply("Failed to fetch the image.")

@@ -16,11 +16,11 @@ access openai api environment variable
 """
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def get_edit(text, edit_image):
+def get_edit(edit_image, edit_mask, text=" "):
     try:
         response = openai.Image.create_edit(
             image=open(f"{edit_image}", "rb"),
-            # mask=open("mask.png", "rb"),
+            mask=open(f"{edit_mask}", "rb"),
             prompt=f"{text}",
             n=1,
             size="1024x1024"
@@ -42,6 +42,35 @@ def convert_image_to_rgba(filename):
     img.save("img_rgba.png")
     img.close()
 
+"""
+creates one transparent circle in the center of image
+"""
+def make_image_transparent(filename, circle_radius=300):
+    img = Image.open(filename)
+    datas = img.getdata()
+    width, height = img.size
+    new_data = []
+    
+    # find the center of the image
+    cx, cy = width // 2, height // 2
+    
+    for y in range(height):
+        for x in range(width):
+            data = datas[y * width + x]
+            
+            # check if (x, y) is inside the circle
+            inside_circle = math.sqrt((x - cx)**2 + (y - cy)**2) <= circle_radius
+            
+            if inside_circle:
+                new_data.append((data[0], data[1], data[2], 0)) 
+            else:
+                new_data.append(data)
+
+    img.putdata(new_data)
+    img.save("img_transparent.png")
+    img.close()
+
+'''
 """
 creates transparent circles randomly over image
 """
@@ -73,6 +102,7 @@ def make_image_transparent(filename, num_circles=3, min_radius=300, max_radius=3
     img.putdata(new_data)
     img.save("img_transparent.png")
     img.close()
+'''
 
 '''
 """
