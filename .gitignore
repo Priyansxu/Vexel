@@ -2,3 +2,7 @@
 \venv
 \__pycache__
 discord.log
+image.png
+img_resized.png
+img_rgba.png
+img_transparent.png
