@@ -122,7 +122,6 @@ draw image
 """
 async def draw_image(prompt, message):
     await message.reply("Drawing...") # command acknowledge message
-    prompt = message.content[5:].strip()
     response = get_image(prompt)
 
     if response.startswith("https"):
