@@ -15,7 +15,7 @@
 <p>As with openai_generation branch, ncludes error handling, pagination for responses over 2000 characters (Discord's limit), and prepends escape character \ to > (quote block) and / (command).</p>
 <p>Requires beefy GPU for generation, though Wuerstchen is extremely fast. Resolution can be lowered to speed up generation, located in bot_controller.py under draw_image(). Max (default) res is 2048x2048.</p>
 <h4>--------</h4>
-<h4>video_generation</h4>
+<h4>local_video</h4>
 <p>Currently in development! Please feel free to contribute :) thank you.</p>
 <p>-Peter</p>
 
