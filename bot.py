@@ -23,7 +23,7 @@ load_dotenv()
 """
 access discord bot token environment variable
 """
-DISCORD_BOT_TOKEN = os.getenv("YOUR_DISCORD_BOT_TOKEN")
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
 """
 define bot intents
