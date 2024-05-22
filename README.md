@@ -22,7 +22,7 @@ To explore all of Vexel's dynamic capabilities, use the **!help** command.
    ```
 
 3. **Configure your bot**:
-   - Set up your `.env` with your Discord bot token, [Anthropic api key](https://console.anthropic.com/settings/keys) and [StabilityAi Api key](https://dreamstudio.ai/account).
+ - Set up your `.env` with your Discord bot token, [Anthropic api key](https://console.anthropic.com/settings/keys) and [StabilityAi Api key](https://dreamstudio.ai/account).
 
 ---
 
