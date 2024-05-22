@@ -1,8 +1,8 @@
 async def help_command(message):
     HELP_TEXT = """
-    > Hey there! I'm Vexel, an AI assistant discord bot!
+    > Hey there! I'm **Vexel**, an AI assistant discord bot!
 
-   *Commands:*
+   ***Commands:**
   - `!ask ` `prompt ` - Ask a question for any information.
   - `!draw ` ` prompt ` - Request to generate an image based on your prompt.
     """ 
