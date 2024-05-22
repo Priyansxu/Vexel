@@ -27,6 +27,7 @@ To explore all of Vexel's dynamic capabilities, use the **!help** command.
 ---
 
 Feel free to customize the repository, dependencies, or any other specific setup instructions based on your project's details.
+
 <a href="https://top.gg/bot/1238461418999648277">
   <img src="https://top.gg/api/widget/owner/1238461418999648277.svg">
 </a>
