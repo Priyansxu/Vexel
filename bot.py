@@ -4,6 +4,7 @@ from discord.ui import Button, View
 from discord.ext import commands
 from ask import get_response
 from draw import get_image
+from help import help_command
 import os
 import logging
 import requests
@@ -55,8 +56,8 @@ class DrawView(ui.View):
         self.prompt = prompt
         self.message = message
         self.api_content = api_content
-        self.add_item(DrawButton(label='Draw'))
-        
+        self.add_item(DrawButton(label='Regenerate'))
+
 """
 helper function to create a view
 """
@@ -68,7 +69,7 @@ ready message
 """
 @bot.event
 async def on_ready():
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name="!ask & !draw"))
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name="!help"))
     print(f'Logged in as {bot.user.name}')
 
 """
@@ -76,26 +77,36 @@ main function to process message
 """
 @bot.event
 async def on_message(message):
-    
+    if message.author.bot:
+        return
+
     prompt = message.content[5:].strip() # get prompt from message content
 
-    if message.content.startswith('!ask'): # text controller
-        response = get_response(prompt) # get response from API
-        api_content = response["content"] # extract only content message from API response
-        
-        if len(api_content) >= 2000: # paginate response if over Discord's character limit
-            await send_paginated_message(message.channel, api_content, prompt, message)
+    if message.content.startswith('!ask'):
+        async with message.channel.typing():
+            response = get_response(prompt)  # get response from API
+            if response:
+                api_content = response  # assuming response is already the content
+                if len(api_content) >= 2000:  # paginate response if over Discord's character limit
+                    await send_paginated_message(message.channel, api_content)
+                else:
+                    await message.reply(api_content)
+  
+    elif message.content.startswith('!draw'): # image controller using Stable Diffusion API
+        if len(prompt) == 0:  # Check if user included image details
+            await message.channel.send("**Please provide image details.** \n\n> *example: !draw beautiful scenery of sunset.*")
         else:
-            view = draw_view(prompt, message, api_content)
-            await message.reply(api_content, view=view)
-
-    if message.content.startswith('!draw'): # image controller using OpenAI API
-        await draw_image(prompt, message)
+            async with message.channel.typing():
+                await draw_image(prompt, message)
+        
+    elif message.content.startswith('!help'): # help command
+        async with message.channel.typing():
+            await help_command(message)
 
 """      
 split response message if over Discord's 2000 character limit
 """
-async def send_paginated_message(channel, api_content, prompt, message):
+async def send_paginated_message(channel, api_content):
     max_chars = 2000
     start = 0 # index 0 of text
     text = api_content
@@ -109,35 +120,26 @@ async def send_paginated_message(channel, api_content, prompt, message):
         chunk = chunk.replace('/', '\/') # replace / with \/
         chunk = chunk.replace('>', '\>') # replace > with \>
 
-        if end >= len(text):
-            view = draw_view(prompt, message, api_content) # creates Draw button
-            await channel.send(chunk, view=view)
-        else:
-            await channel.send(chunk)
-
+        await channel.send(chunk)
         start = end
-
+ 
 """
-draw image
-"""
+draw image using Stable Diffusion API
+""" 
 async def draw_image(prompt, message):
     await message.reply("Drawing...") # command acknowledge message
     response = get_image(prompt)
-
-    if response.startswith("https"):
-        img_url = response
-    img_response = requests.get(img_url)
-
-    if img_response.status_code == 200:
-        img_bytes = img_response.content # hold image in ram
-        img_file = io.BytesIO(img_bytes) # send as Discord file attachment
-        view = draw_view(prompt, message, api_content=prompt) # format Draw button
-        await message.reply(file=discord.File(img_file, "output.png"), view=view) # reply with image, and view for button
-        img_file.close() # close the new BytesIO object
+ 
+    if response is not None and isinstance(response, bytes):
+        img_bytes = response
+        img_file = io.BytesIO(img_bytes)  # Send as Discord file attachment
+        view = draw_view(prompt, message, api_content=prompt)  # Format Draw button
+        await message.reply(file=discord.File(img_file, "output.png"), view=view)  # Reply with image, and view for button
+        img_file.close()  # Close the new BytesIO object
     else:
-        await message.reply("Failed to fetch the image.")
+        await message.reply("Failed to generate the image.") 
 
 """
 run bot
 """
-bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler)
+bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler) 
