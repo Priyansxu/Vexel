@@ -1,0 +1,8 @@
+discord
+discord.py
+python-dotenv
+requests
+anthropic
+aiohttp
+certifi
+async-timeout 
