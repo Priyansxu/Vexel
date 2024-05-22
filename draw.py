@@ -1,30 +1,39 @@
-import openai
 import os
+import base64
+import requests
 
-"""
-load environment variables from .env file
-"""
-from dotenv import load_dotenv
-load_dotenv()
+API_HOST = "https://api.stability.ai"
+ENGINE_ID = "stable-diffusion-xl-1024-v1-0"
+API_KEY = os.getenv("STABILITY_API_KEY")
 
-"""
-access the openai api environment variable
-"""
-openai.api_key = os.getenv("OPENAI_API_KEY")
+if API_KEY is None:
+    raise Exception("Missing Stability API key.")
 
-"""
-image request controller
-"""
 def get_image(text):
     try:
-        response = openai.Image.create(
-            prompt = f"{text}",
-            n=1, # batch size per response
-            size="1024x1024"
+        response = requests.post(
+            f"{API_HOST}/v1/generation/{ENGINE_ID}/text-to-image",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {API_KEY}"
+            },
+            json={
+                "text_prompts": [{"text": text}],
+                "cfg_scale": 7,
+                "height": 1024,
+                "width": 1024,
+                "samples": 1,
+                "steps": 30,
+            },
         )
-
-    except openai.error.OpenAIError as e:
-        print(e.http_status)
-        print(e.error)
-
-    return response['data'][0]['url']
+        response.raise_for_status()  
+        data = response.json()
+        
+        # Extract and return the first image artifact
+        image_data = data["artifacts"][0]["base64"]
+        return base64.b64decode(image_data)
+    
+    except requests.RequestException as e:
+        print("Request failed:", e)
+        return None 
