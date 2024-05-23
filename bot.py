@@ -80,6 +80,20 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    # Check if the bot is mentioned in the message
+    if bot.user.mentioned_in(message):
+        prompt = message.content.replace(f'<@{bot.user.id}>', '').strip()  # get prompt from message content
+        if prompt:  # Check if there is any content after the mention
+            async with message.channel.typing():
+                response = get_response(prompt)  # get response from AI API
+                if response:
+                    api_content = response  # assuming response is already the content
+                    if len(api_content) >= 2000:  # paginate response if over Discord's character limit
+                        await send_paginated_message(message.channel, api_content)
+                    else:
+                        await message.reply(api_content)
+            return
+
     prompt = message.content[5:].strip() # get prompt from message content
 
     if message.content.startswith('!ask'):
@@ -91,14 +105,14 @@ async def on_message(message):
                     await send_paginated_message(message.channel, api_content)
                 else:
                     await message.reply(api_content)
-  
+
     elif message.content.startswith('!draw'): # image controller using Stable Diffusion API
         if len(prompt) == 0:  # Check if user included image details
             await message.channel.send("**Please provide image details.** \n\n> *example: !draw beautiful scenery of sunset.*")
         else:
             async with message.channel.typing():
                 await draw_image(prompt, message)
-        
+
     elif message.content.startswith('!help'): # help command
         async with message.channel.typing():
             await help_command(message)
@@ -115,21 +129,21 @@ async def send_paginated_message(channel, api_content):
         end = start + max_chars # end index of each chunk
         if end > len(text):
             end = len(text) # prevent out of bounds error
-        
+
         chunk = text[start:end] # escape / and > characters before sending
         chunk = chunk.replace('/', '\/') # replace / with \/
         chunk = chunk.replace('>', '\>') # replace > with \>
 
         await channel.send(chunk)
         start = end
- 
+
 """
 draw image using Stable Diffusion API
 """ 
 async def draw_image(prompt, message):
     await message.reply("Drawing...") # command acknowledge message
     response = get_image(prompt)
- 
+
     if response is not None and isinstance(response, bytes):
         img_bytes = response
         img_file = io.BytesIO(img_bytes)  # Send as Discord file attachment
