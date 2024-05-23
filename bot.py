@@ -69,7 +69,7 @@ ready message
 """
 @bot.event
 async def on_ready():
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name="!help"))
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name="@vexel & !help"))
     print(f'Logged in as {bot.user.name}')
 
 """
@@ -79,8 +79,7 @@ main function to process message
 async def on_message(message):
     if message.author.bot:
         return
-
-    # Check if the bot is mentioned in the message
+ 
     if bot.user.mentioned_in(message):
         prompt = message.content.replace(f'<@{bot.user.id}>', '').strip()  # get prompt from message content
         if prompt:  # Check if there is any content after the mention
@@ -92,7 +91,9 @@ async def on_message(message):
                         await send_paginated_message(message.channel, api_content)
                     else:
                         await message.reply(api_content)
-            return
+        else:
+            await message.reply("Hey there, how can I assist you today? For commands, execute !help")
+            return 
 
     prompt = message.content[5:].strip() # get prompt from message content
 
@@ -156,4 +157,4 @@ async def draw_image(prompt, message):
 """
 run bot
 """
-bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler) 
+bot.run(f"{DISCORD_BOT_TOKEN}", log_handler=handler)
