@@ -34,7 +34,3 @@ Feel free to customize the repository, dependencies, or any other specific setup
 <a href="https://top.gg/bot/1238461418999648277">
   <img src="https://top.gg/api/widget/upvotes/1238461418999648277.svg?noavatar=true">
 </a>
-
-<a href="https://visitcount.itsvg.in">
-  <img src="https://visitcount.itsvg.in/api?id=Vexel&label=Bot%20views&color=12&icon=5&pretty=true" />
-</a> 
