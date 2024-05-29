@@ -6,8 +6,7 @@
 
 - **!draw**: Transform text into captivating images. Just provide the text, and Vexel will generate a visual representation.
 - **!ask**: Engage in intelligent conversations. Ask questions or start discussions, and Vexel will provide thoughtful and insightful responses.
-
-To explore all of Vexel's dynamic capabilities, use the **!help** command.
+- **!look**: Image analysis, attach your image with the command and it will describe it for you!
 
 ## Getting Started
 
