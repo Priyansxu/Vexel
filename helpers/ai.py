@@ -2,6 +2,7 @@ import base64
 import anthropic
 import aiohttp
 import imghdr
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
