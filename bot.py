@@ -99,6 +99,7 @@ async def on_guild_join(guild):
 """
 Main function to process messages
 """
+# Dictionary to store conversation history for each user
 conversation_histories = {}
 
 @bot.event
@@ -127,7 +128,7 @@ async def on_message(message):
                     else:
                         await message.reply(response)
                 else:
-                    await message.reply("Sorry, I couldn't answer you right now.")
+                    await message.reply("Sorry, I couldn't answer you right now. You can use !draw cmnd for now! Thanku")
         else:
             await message.reply("Hey there, how can I assist you today? For commands, execute !help")
         return
@@ -145,7 +146,7 @@ async def on_message(message):
                 else:
                     await message.reply(response)
             else:
-                await message.reply("Sorry, I couldn't answer you right now.")
+                await message.reply("Sorry, I couldn't answer you right now. You can use !draw cmnd for now! Thanku.")
 
     elif message.content.startswith('!draw'):
         prompt = message.content[6:].strip()
