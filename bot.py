@@ -1,4 +1,5 @@
 import platform
+import os
 import logging
 import discord
 from discord.ext import commands
@@ -15,8 +16,8 @@ server_logger = setup_logger('server', 'server.log')
 chat_logger = setup_logger('chat', 'chats.log')
 
 class Vexel(commands.Bot):
-    def __init__(self):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__( *args, **kwargs)
         self.logger = discord_logger
         self.server_logger = server_logger
         self.chat_logger = chat_logger
@@ -51,4 +52,4 @@ bot = Vexel(
   )
 
 # Run bot
-bot.run(DISCORD_BOT_TOKEN, log_handler=discord_logger)
+bot.run(DISCORD_BOT_TOKEN)

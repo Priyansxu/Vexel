@@ -1,3 +1,4 @@
+import os
 import base64
 import anthropic
 import aiohttp
@@ -32,7 +33,7 @@ def get_response(conversation_history):
     except Exception as e:
         return None 
 
-def recognize_image(self, image_data, prompt):
+async def recognize_image(self, image_data, prompt):
     try:
         if isinstance(image_data, str): 
             async with aiohttp.ClientSession() as session:

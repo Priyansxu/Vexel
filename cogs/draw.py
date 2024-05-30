@@ -35,7 +35,7 @@ class Draw(commands.Cog):
         if not prompt:
             await ctx.channel.send("**Please provide image details.** \n\n> *example: !draw beautiful scenery of sunset.*")
             return
-        async with ctx.channel.typing()
+        async with ctx.channel.typing():
             await ctx.reply("Drawing...")
             response = get_image(prompt)
             self.chat_logger.info(f"{ctx.author.name}: {prompt}\nVexel: {'Image generated' if response else 'Failed to generate image'}\n")
