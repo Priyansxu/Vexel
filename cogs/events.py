@@ -30,7 +30,7 @@ class Events(commands.Cog):
      
     # Message listener
     @commands.Cog.listener()
-    async def on_message(message) -> None:
+    async def on_message(self, message) -> None:
         if message.author.bot:
             return
         
