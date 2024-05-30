@@ -127,7 +127,7 @@ async def on_message(message):
                     else:
                         await message.reply(response)
                 else:
-                    await message.reply("Sorry, I couldn't answer you right now. You can use !draw cmnd for now! Thanku")
+                    await message.reply("Sorry, I couldn't answer you right now.")
         else:
             await message.reply("Hey there, how can I assist you today? For commands, execute !help")
         return
@@ -145,7 +145,7 @@ async def on_message(message):
                 else:
                     await message.reply(response)
             else:
-                await message.reply("Sorry, I couldn't answer you right now. You can use !draw cmnd for now! Thanku.")
+                await message.reply("Sorry, I couldn't answer you right now.")
 
     elif message.content.startswith('!draw'):
         prompt = message.content[6:].strip()
