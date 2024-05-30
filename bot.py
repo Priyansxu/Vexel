@@ -73,7 +73,7 @@ Ready event
 """
 @bot.event
 async def on_ready():
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name="!help"))
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name="@vexel & !help"))
     print(f'Logged in as {bot.user.name}')
 
 """
@@ -177,12 +177,12 @@ async def on_message(message):
         await message.reply("Your chat history has been reset.")
         
     elif message.content.startswith('!sayhi'):
-        greeting_message = "Hello everyone!"
+        message = message.content[7:].strip()
         for guild in bot.guilds:
             for channel in guild.text_channels:
                 if "general" in channel.name or "chat" in channel.name:
                     try:
-                        await channel.send(greeting_message)
+                        await channel.send(message)
                     except discord.Forbidden:
                         server_logger.info(f"Permission denied to send message in {channel.name} of guild {guild.name}")
                     break
