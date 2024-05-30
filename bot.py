@@ -35,6 +35,12 @@ class Vexel(commands.Bot):
                 await self.load_extension(f"cogs.{filename[:-3]}")
                 self.logger.info(f"Successfully loaded the {filename} cog!")
 
+
+intents = discord.Intents.default()
+intents.typing = False
+intents.presences = False
+intents.message_content = True
+
 bot = Vexel(
     command_prefix=commands.when_mentioned_or("!"), # The prefix for commands
     case_insensitive=True, # Whether the commands are case insensitive
