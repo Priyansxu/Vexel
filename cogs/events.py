@@ -19,7 +19,7 @@ class Events(commands.Cog):
         self.server_logger.info(f"Joined new server: {server_name}, Owner: {server_owner}, Total Members: {total_members}")
     
         channel_id = 1243869783406018640  # Adjust this channel ID as needed
-        channel = bot.get_channel(channel_id)
+        channel = self.bot.get_channel(channel_id)
         message = (
             f"Joined new server:\n"
             f"**Server Name:** {server_name}\n"
@@ -41,13 +41,13 @@ class Events(commands.Cog):
         user_prompt = message.content
         username = message.author.name
     
-        if bot.user.mentioned_in(message):
-            prompt = message.content.replace(f'<@{bot.user.id}>', '').strip()
+        if self.bot.user.mentioned_in(message):
+            prompt = message.content.replace(f'<@{self.bot.user.id}>', '').strip()
             if prompt:
                 self.conversation_histories[user_id].append({"role": "user", "content": prompt})
                 async with message.channel.typing():
                     response = get_response(self.conversation_histories[user_id])
-                    chat_logger.info(f"{username}: {prompt}\nVexel: {response}\n")
+                    self.chat_logger.info(f"{username}: {prompt}\nVexel: {response}\n")
                     if response:
                         self.conversation_histories[user_id].append({"role": "assistant", "content": response})
                         if len(response) >= 2000:

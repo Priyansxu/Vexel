@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from discord import ui
 from discord.ui import Button, View
-from helpers.ai import get_image
+from helpers.ai import get_image, draw_image
 
 # Button callback
 class DrawButton(ui.Button['DrawView']):
