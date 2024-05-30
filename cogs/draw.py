@@ -3,13 +3,15 @@ import discord
 from discord.ext import commands
 from discord import ui
 from discord.ui import Button, View
-from helpers.ai import get_image, draw_image
+from helpers.ai import get_image
+
+# To be fixed
 
 # Button callback
 class DrawButton(ui.Button['DrawView']):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        await draw_image(self.view.api_content, self.view.message)
+        #await draw_image(self.view.api_content, self.view.message)
 
 class DrawView(ui.View):
     def __init__(self, prompt, message, api_content):
