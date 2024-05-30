@@ -5,13 +5,11 @@ from discord import ui
 from discord.ui import Button, View
 from helpers.ai import get_image
 
-# To be fixed
-
 # Button callback
 class DrawButton(ui.Button['DrawView']):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        #await draw_image(self.view.api_content, self.view.message)
+        await self.view.draw_image(self.view.api_content, self.view.message)
 
 class DrawView(ui.View):
     def __init__(self, prompt, message, api_content):
@@ -25,6 +23,15 @@ class DrawView(ui.View):
     def draw_view(prompt, message, api_content):
         return DrawView(prompt=prompt, message=message, api_content=api_content)
 
+    async def draw_image(self, api_content, message):
+        response = get_image(api_content)
+        if response is not None and isinstance(response, bytes):
+            img_bytes = response
+            img_file = io.BytesIO(img_bytes)
+            await message.edit(content="Here is your image:", attachments=[discord.File(img_file, "output.png")])
+            img_file.close()
+        else:
+            await message.edit(content="Failed to regenerate the image.")
 
 class Draw(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -33,10 +40,11 @@ class Draw(commands.Cog):
     
     @commands.command(name="draw")
     async def draw(self, ctx) -> None:
-        prompt = ctx.message.content
+        prompt = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip()
         if not prompt:
-            await ctx.channel.send("**Please provide image details.** \n\n> *example: !draw beautiful scenery of sunset.*")
+            await ctx.channel.send("**Please provide image details.**\n\n> *example: !draw beautiful scenery of sunset.*")
             return
+        
         async with ctx.channel.typing():
             await ctx.reply("Drawing...")
             response = get_image(prompt)
@@ -44,11 +52,12 @@ class Draw(commands.Cog):
             if response is not None and isinstance(response, bytes):
                 img_bytes = response
                 img_file = io.BytesIO(img_bytes)
-                view = DrawView.draw_view(prompt, ctx.message, api_content=prompt)
-                await ctx.reply(file=discord.File(img_file, "output.png"), view=view)
+                message = await ctx.reply(file=discord.File(img_file, "output.png"))
+                view = DrawView.draw_view(prompt, message, api_content=prompt)
+                await message.edit(view=view)
                 img_file.close()
             else:
                 await ctx.reply("Failed to generate the image.")
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Draw(bot))
