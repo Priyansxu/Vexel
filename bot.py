@@ -99,7 +99,6 @@ async def on_guild_join(guild):
 """
 Main function to process messages
 """
-# Dictionary to store conversation history for each user
 conversation_histories = {}
 
 @bot.event
