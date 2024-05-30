@@ -6,3 +6,4 @@ anthropic
 aiohttp
 certifi
 async-timeout 
+platform
