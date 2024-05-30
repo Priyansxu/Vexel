@@ -86,7 +86,7 @@ async def on_guild_join(guild):
     total_members = guild.member_count
     server_logger.info(f"Joined new server: {server_name}, Owner: {server_owner}, Total Members: {total_members}")
 
-    channel_id = 1243869783406018640  # Adjust this channel ID as needed
+    channel_id = 1243869783406018640
     channel = bot.get_channel(channel_id)
     message = (
         f"Joined new server:\n"
