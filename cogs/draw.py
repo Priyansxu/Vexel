@@ -42,7 +42,7 @@ class Draw(commands.Cog):
             if response is not None and isinstance(response, bytes):
                 img_bytes = response
                 img_file = io.BytesIO(img_bytes)
-                view = DrawView.draw_view(prompt, message, api_content=prompt)
+                view = DrawView.draw_view(prompt, ctx.message, api_content=prompt)
                 await ctx.reply(file=discord.File(img_file, "output.png"), view=view)
                 img_file.close()
             else:
