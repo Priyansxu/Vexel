@@ -34,7 +34,7 @@ class Help(commands.Cog):
 
         embed.set_footer(text="Vexel AI")
 
-        embed.set_image(url="https://cdn.discordapp.com/attachments/1246837283030565004/1250140939910123681/Untitled5.png?ex=6669dbfa&is=66688a7a&hm=638dd5c4df7bc54eccbc3e4282caa96af17f7b74148c316aab95079cf94623a5&")
+        embed.set_image(url="https://vexel.vercel.app/vexel_header.png")
 
         view = discord.ui.View()
 
