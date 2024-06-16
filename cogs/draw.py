@@ -5,11 +5,18 @@ from discord import ui
 from discord.ui import Button, View
 from helpers.ai import get_image
 
-# Button callback
 class DrawButton(ui.Button['DrawView']):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        
+        self.view.clear_items()
+        self.view.add_item(RegeneratingButton(label='Regenerating...', disabled=True))
+        await interaction.message.edit(view=self.view)
         await self.view.draw_image(self.view.api_content, self.view.message)
+
+class RegeneratingButton(ui.Button['DrawView']):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class DrawView(ui.View):
     def __init__(self, prompt, message, api_content):
@@ -28,10 +35,14 @@ class DrawView(ui.View):
         if response is not None and isinstance(response, bytes):
             img_bytes = response
             img_file = io.BytesIO(img_bytes)
-            await message.edit(content="Here is your image:", attachments=[discord.File(img_file, "output.png")])
+            await message.edit(attachments=[discord.File(img_file, "vexel.png")])
             img_file.close()
         else:
             await message.edit(content="Failed to regenerate the image.")
+        
+        self.clear_items()
+        self.add_item(DrawButton(label='Regenerate'))
+        await message.edit(view=self)
 
 class Draw(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -52,7 +63,7 @@ class Draw(commands.Cog):
             if response is not None and isinstance(response, bytes):
                 img_bytes = response
                 img_file = io.BytesIO(img_bytes)
-                message = await ctx.reply(file=discord.File(img_file, "output.png"))
+                message = await ctx.reply(file=discord.File(img_file, "vexel.png"))
                 view = DrawView.draw_view(prompt, message, api_content=prompt)
                 await message.edit(view=view)
                 img_file.close()
