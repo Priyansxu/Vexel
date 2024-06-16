@@ -12,28 +12,35 @@ class Ask(commands.Cog):
     
     @commands.command(name="ask")
     async def ask(self, ctx) -> None:
-        prompt = ctx.message.content
+        prompt = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip() 
         username = ctx.author.name
         user_id = ctx.author.id
+        
+        if user_id not in self.conversation_histories:
+            self.conversation_histories[user_id] = []
+
         self.conversation_histories[user_id].append({"role": "user", "content": prompt})
         async with ctx.channel.typing():
-            response = get_response(self.conversation_histories[user_id])
-            self.chat_logger.info(f"{username}: {prompt}\nVexel: {response}\n")
-            if response:
-                self.conversation_histories[user_id].append({"role": "assistant", "content": response})
-                if len(response) >= 2000:
-                    await send_paginated_message(ctx.channel, response)
+            try:
+                response = get_response(self.conversation_histories[user_id])
+                self.chat_logger.info(f"{username}: {prompt}\nVexel: {response}\n")
+                if response:
+                    self.conversation_histories[user_id].append({"role": "assistant", "content": response})
+                    if len(response) >= 2000:
+                        await send_paginated_message(ctx.channel, response)
+                    else:
+                        await ctx.reply(response)
                 else:
-                    await ctx.reply(response)
-            else:
-                await ctx.reply("Sorry, I couldn't answer you right now. You can use !draw cmnd for now! Thanku.")
-
+                    await ctx.reply("Sorry, I couldn't answer you right now.")
+            except Exception as e:
+                self.chat_logger.error(f"Error processing ask command: {e}")
+                await ctx.reply("An error occurred while processing your request.")
+    
     @commands.command(name="reset")
     async def reset(self, ctx) -> None:
         user_id = ctx.author.id
         self.conversation_histories[user_id] = []
         await ctx.reply("Your chat history has been reset.")
 
-
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Ask(bot))
+    await bot.add_cog(Ask(bot)) 
