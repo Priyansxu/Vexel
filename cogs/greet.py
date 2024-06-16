@@ -4,10 +4,11 @@ from discord.ext import commands
 class Greet(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
- 
-    @commands.command(name="sendxyz")
+
+    @commands.command(name="greet")
+    @commands.is_owner()
     async def greet_command(self, ctx: commands.Context) -> None:
-        greeting_message = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip() 
+        greeting_message = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip()
         for guild in self.bot.guilds:
             for channel in guild.text_channels:
                 if "general" in channel.name or "chat" in channel.name:
