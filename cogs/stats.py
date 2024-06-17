@@ -17,7 +17,7 @@ class Stats(commands.Cog):
 
         embed.add_field(name="Vexel created", value="<t:1715293531:R>")
 
-        embed.add_field(name="Vexel created", value="` @priyansxu `")
+        embed.add_field(name="Developer", value="` @priyansxu `")
 
         await ctx.send(embed=embed)
 
