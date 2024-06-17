@@ -50,7 +50,7 @@ class Draw(commands.Cog):
             return
 
         async with ctx.typing():
-            await ctx.reply("Drawing...")
+            drawing_message = await ctx.reply("Drawing...")
             response = get_image(prompt)
             self.chat_logger.info(f"{ctx.author.name}: {prompt}\nVexel: {'Image generated' if response else 'Failed to generate image'}\n")
             if response and isinstance(response, bytes):
@@ -59,8 +59,10 @@ class Draw(commands.Cog):
                 view = DrawView(prompt, message, prompt)
                 await message.edit(view=view)
                 img_file.close()
+                await drawing_message.delete()
             else:
-                await ctx.reply("Failed to generate the image.")
+                await drawing_message.edit(content="Failed to generate the image.")
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Draw(bot)) 
+    await bot.add_cog(Draw(bot))
+ 
