@@ -14,10 +14,10 @@ class Stats(commands.Cog):
 
         ping_latency = self.bot.latency * 1000
         embed.add_field(name="Ping Latency", value=f"{ping_latency:.2f} ms")
+        
+        embed.add_field(name="Developer", value="`@priyansxu`")
 
         embed.add_field(name="Vexel Created", value="<t:1715293531:R>")
-
-        embed.add_field(name="Developer", value="` @priyansxu `")
 
         await ctx.send(embed=embed)
 
