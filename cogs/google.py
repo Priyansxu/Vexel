@@ -23,7 +23,7 @@ class Google(commands.Cog):
         search_url = f"{google_url}?{urllib.parse.urlencode(params)}"
         
         embed = discord.Embed(
-            title="LMGTFY Search",
+            title="Google",
             description=f"Click the button below (;",
             color=discord.Color(0x871ef4)
         )
