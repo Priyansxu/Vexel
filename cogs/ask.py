@@ -64,8 +64,8 @@ class Ask(commands.Cog):
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
-        
-        if self.bot.user.mentioned_in(message):
+
+        if self.bot.user.mentioned_in(message) and not message.mention_everyone:
             await self.on_mention(message)
 
     async def on_mention(self, message):
@@ -99,4 +99,6 @@ class Ask(commands.Cog):
                 await message.reply("An error occurred while processing your request.")
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Ask(bot)) 
+    await bot.add_cog(Ask(bot))
+
+ 
