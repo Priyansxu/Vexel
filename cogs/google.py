@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 import urllib.parse
 
 class GoogleButton(discord.ui.View):
@@ -11,26 +12,16 @@ class Google(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.command(name="google")
-    async def google(self, ctx: commands.Context) -> None:
-        query = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip()
-        if not query:
-            await ctx.send("Please provide a search query.")
-            return
-        
+    @app_commands.command(name="google", description="Search somthing on google")
+    @app_commands.describe(search="The search query to look up on Google")
+    async def google(self, interaction: discord.Interaction, search: str) -> None:
         google_url = "https://letmegooglethat.com"
-        params = {"q": query}
+        params = {"q": search}
         search_url = f"{google_url}?{urllib.parse.urlencode(params)}"
-        
-        embed = discord.Embed(
-            title="Google",
-            description=f"Click the button below (;",
-            color=discord.Color(0x871ef4)
-        )
 
-        view = GoogleButton(label=query, url=search_url)
-        
-        await ctx.send(embed=embed, view=view)
+        view = GoogleButton(label=search, url=search_url)
+
+        await interaction.response.send_message(view=view)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Google(bot))
+    await bot.add_cog(Google(bot)) 
