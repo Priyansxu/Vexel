@@ -1,7 +1,7 @@
 import io
 import discord
 from discord.ext import commands
-from discord import ui
+from discord import ui, app_commands
 from helpers.ai import get_image
 
 class DrawButton(ui.Button):
@@ -40,28 +40,23 @@ class DrawView(ui.View):
 class Draw(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.chat_logger = bot.chat_logger
 
-    @commands.command(name="draw")
-    async def draw(self, ctx):
-        prompt = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip()
-        if not prompt:
-            await ctx.send("**Please provide image details.**\n> *example: !draw beautiful scenery of sunset.*")
-            return
-
-        async with ctx.typing():
-            drawing_message = await ctx.reply("Drawing...")
-            response = get_image(prompt)
-            self.chat_logger.info(f"{ctx.author.name}: {prompt}\nVexel: {'Image generated' if response else 'Failed to generate image'}\n")
-            if response and isinstance(response, bytes):
-                img_file = io.BytesIO(response)
-                message = await ctx.reply(file=discord.File(img_file, "image.png"))
-                view = DrawView(prompt, message, prompt)
-                await message.edit(view=view)
-                img_file.close()
-                await drawing_message.delete()
-            else:
-                await drawing_message.edit(content="Failed to generate the image.")
+    @app_commands.command(name="draw", description="Generate an image")
+    @app_commands.describe(prompt="The prompt for the image")
+    async def draw(self, interaction: discord.Interaction, prompt: str):
+        await interaction.response.defer()
+        message = await interaction.followup.send("Drawing...")
+        
+        response = get_image(prompt)
+        
+        if response and isinstance(response, bytes):
+            img_file = io.BytesIO(response)
+            await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
+            view = DrawView(prompt, message, prompt)
+            await message.edit(view=view)
+            img_file.close()
+        else:
+            await message.edit(content="Failed to generate the image.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Draw(bot))
