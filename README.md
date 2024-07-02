@@ -25,6 +25,10 @@
 3. **Configure your bot**:
  - Set up your `.env` with your Discord bot token, [Gemini Api key](https://aistudio.google.com/app/apikey) and [StabilityAi Api key](https://dreamstudio.ai/account).
 
+## Join Vexel server
+
+<iframe src="https://discord.com/widget?id=1253800862812471361&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+
 ---
 
 <a href="https://top.gg/bot/1238461418999648277">
