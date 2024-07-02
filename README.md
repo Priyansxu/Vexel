@@ -4,9 +4,11 @@
 
 ## Features
 
-- **!draw**: Transform text into captivating images. Just provide the text, and Vexel will generate a visual representation.
-- **!ask**: Engage in intelligent conversations. Ask questions or start discussions, and Vexel will provide thoughtful and insightful responses.
-- **!look**: Image analysis, attach your image with the command and it will describe it for you!
+- **/chat**: Start your chat with Ai!
+- **/draw**: Transform text into captivating images.
+- **/analyze**: Attach an image to analyse.
+- **/modify**: Attach an image to edit it.
+- **/wipe**: Wipe your chat history with Vexel.
 
 ## Getting Started
 
@@ -21,11 +23,9 @@
    ```
 
 3. **Configure your bot**:
- - Set up your `.env` with your Discord bot token, [Anthropic api key](https://console.anthropic.com/settings/keys) and [StabilityAi Api key](https://dreamstudio.ai/account).
+ - Set up your `.env` with your Discord bot token, [Gemini Api key](https://aistudio.google.com/app/apikey) and [StabilityAi Api key](https://dreamstudio.ai/account).
 
 ---
-
-Feel free to customize the repository, dependencies, or any other specific setup instructions based on your project's details.
 
 <a href="https://top.gg/bot/1238461418999648277">
   <img src="https://top.gg/api/widget/owner/1238461418999648277.svg">
