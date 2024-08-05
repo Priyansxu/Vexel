@@ -42,7 +42,7 @@ class EditView(ui.View):
         self.button_state('Regenerate', False)
         await self.message.edit(view=self)
 
-class Edit(commands.Cog):
+class Modify(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
  
@@ -81,7 +81,7 @@ class Edit(commands.Cog):
             else:
                 await interaction.followup.send("Failed to generate the image.")
         except Exception as e:
-            await interaction.followup.send(f"Image size must be between 320 and 1536 pixels.")
+            await interaction.followup.send(f"An error occurred while processing your request.")
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Edit(bot)) 
+    await bot.add_cog(Modify(bot)) 
