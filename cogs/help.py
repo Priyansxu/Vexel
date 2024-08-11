@@ -44,7 +44,7 @@ class Help(commands.Cog):
             value="Wipe your chat history with Vexel.",
             inline=False
         )
-       embed.set_image(url="https://vexel.vercel.app/vexel_header.png")
+        embed.set_image(url="https://vexel.vercel.app/vexel_header.png")
 
         view = discord.ui.View()
 
