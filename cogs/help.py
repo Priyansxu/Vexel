@@ -17,7 +17,7 @@ class Help(commands.Cog):
 
         embed.add_field(
             name="/chat",
-            value="Chat with vexel",
+            value="Start chating with Vexel.",
             inline=False
         )
 
@@ -43,15 +43,8 @@ class Help(commands.Cog):
             name="/wipe",
             value="Wipe your chat history with Vexel.",
             inline=False
-        ) 
-    
-        embed.add_field(
-            name="/google",
-            value="Search Google for the given query.",
-            inline=False
-        ) 
-
-        embed.set_image(url="https://vexel.vercel.app/vexel_header.png")
+        )
+       embed.set_image(url="https://vexel.vercel.app/vexel_header.png")
 
         view = discord.ui.View()
 
