@@ -20,19 +20,17 @@ class Vexel(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.conversation_histories = {}
-  
+
     async def on_ready(self) -> None:
-        logger.info(f"{self.user} is now online!")
-        logger.info(f"Logged in as {self.user.name}")
+        logger.info(f"{self.user.name} is now online.")
         logger.info(f"discord.py API version: {discord.__version__}")
         logger.info(f"Python version: {platform.python_version()}")
-        logger.info(f"Running on: {platform.system()} {platform.release()} ({os.name})")
-    
+
     async def setup_hook(self) -> None:
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 await self.load_extension(f"cogs.{filename[:-3]}")
-                logger.info(f"Successfully loaded the {filename}!")
+                logger.info(f"Successfully loaded {filename[:-3]} command!")
         await self.tree.sync()
 
     async def on_command_error(self, ctx, error):
@@ -47,7 +45,7 @@ intents.presences = False
 intents.message_content = False
 
 bot = Vexel(
-    command_prefix=commands.when_mentioned_or("!"),
+    command_prefix=commands.when_mentioned,
     case_insensitive=True,
     intents=intents,
     help_command=None,
@@ -55,4 +53,4 @@ bot = Vexel(
     status=discord.Status.idle
 )
 
-bot.run(DISCORD_BOT_TOKEN) 
+bot.run(DISCORD_BOT_TOKEN)
