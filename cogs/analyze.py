@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from helpers.ai import recognize_image
 
-class Look(commands.Cog):
+class Analyze(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
