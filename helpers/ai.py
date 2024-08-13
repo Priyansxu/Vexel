@@ -1,6 +1,5 @@
 import os
 import base64
-import anthropic
 import aiohttp
 import imghdr
 import requests
