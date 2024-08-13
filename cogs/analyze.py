@@ -9,7 +9,7 @@ class Analyze(commands.Cog):
 
     @app_commands.command(name="analyze", description="Analyze an image")
     @app_commands.describe(image="The image to analyze", prompt="The prompt for image description")
-    async def look(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str = "Describe the image") -> None:
+    async def analyze(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str = "Describe the image") -> None:
         username = interaction.user.name
         await interaction.response.defer()
         
