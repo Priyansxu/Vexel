@@ -15,11 +15,10 @@ class DrawButton(ui.Button):
         await self.view.draw_image()
 
 class DrawView(ui.View):
-    def __init__(self, prompt, message, api_content):
+    def __init__(self, prompt, message):
         super().__init__()
         self.prompt = prompt
         self.message = message
-        self.api_content = api_content
         self.add_item(DrawButton())
 
     def button_state(self, label, disabled):
@@ -27,7 +26,7 @@ class DrawView(ui.View):
         self.add_item(DrawButton(label=label, disabled=disabled))
 
     async def draw_image(self):
-        response = get_image(self.api_content)
+        response = get_image(self.prompt)
         if response and isinstance(response, bytes):
             img_file = io.BytesIO(response)
             await self.message.edit(attachments=[discord.File(img_file, "image.png")])
@@ -46,13 +45,13 @@ class Draw(commands.Cog):
     async def draw(self, interaction: discord.Interaction, prompt: str):
         await interaction.response.defer()
         message = await interaction.followup.send("Drawing...")
-        
+
         response = get_image(prompt)
-        
+
         if response and isinstance(response, bytes):
             img_file = io.BytesIO(response)
             await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
-            view = DrawView(prompt, message, prompt)
+            view = DrawView(prompt, message)
             await message.edit(view=view)
             img_file.close()
         else:
@@ -60,4 +59,3 @@ class Draw(commands.Cog):
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Draw(bot))
- 
