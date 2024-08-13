@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from helpers.pagination import send_paginated_message
+from helpers.pagination import paginated_message
 from helpers.ai import get_response
 
 class Chat(commands.Cog):
@@ -26,13 +26,13 @@ class Chat(commands.Cog):
             if response:
                 self.chat_histories[user_id].append({"role": "model", "parts": [response]}) 
                 if len(response) >= 2000:
-                    await send_paginated_message(interaction.channel, response)
+                    await paginated_message(interaction.channel, response)
                 else:
                     await interaction.followup.send(response)
             else:
                 await interaction.followup.send("Sorry, I couldn't answer you right now.")
         except Exception as e:
-            await interaction.followup.send(f"Ugh, my brain hurts, can you say that again?")
+            await interaction.followup.send("Ugh, my brain hurts, can you say that again?")
 
     @app_commands.command(name="wipe", description="Wipe chat history")
     async def wipe(self, interaction: discord.Interaction):
@@ -53,7 +53,6 @@ class Chat(commands.Cog):
             await self.on_mention(message)
 
     async def on_mention(self, message):
-        username = message.author.name
         user_id = message.author.id
         mention_content = message.content.replace(f"<@{self.bot.user.id}>", "").strip()
         if not mention_content:
@@ -70,7 +69,7 @@ class Chat(commands.Cog):
                 if response:
                     self.chat_histories[user_id].append({"role": "model", "parts": [response]})
                     if len(response) >= 2000:
-                        await send_paginated_message(message.channel, response)
+                        await paginated_message(message.channel, response)
                     else:
                         await message.reply(response)
                 else:
@@ -79,4 +78,4 @@ class Chat(commands.Cog):
                 print(f"Error in on_mention: {e}")
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Chat(bot)) 
+    await bot.add_cog(Chat(bot))
