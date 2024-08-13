@@ -3,13 +3,13 @@ from discord.ext import commands
 from discord import app_commands
 from helpers.ai import recognize_image
 
-class Vision(commands.Cog):
+class Analyze(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="vision", description="Recognize an image")
+    @app_commands.command(name="analyze", description="Recognize an image")
     @app_commands.describe(image="The image to recognize", prompt="The prompt for image description")
-    async def recognize(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str = "Describe the image") -> None:
+    async def analyze(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str = "Describe the image") -> None:
         await interaction.response.defer()
 
         try:
@@ -20,4 +20,4 @@ class Vision(commands.Cog):
             await interaction.followup.send("There was an error processing the image. Please try again.")
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Vision(bot))
+    await bot.add_cog(Analyze(bot))
