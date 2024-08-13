@@ -10,9 +10,8 @@ class Analyze(commands.Cog):
     @app_commands.command(name="analyze", description="Analyze an image")
     @app_commands.describe(image="The image to analyze", prompt="The prompt for image description")
     async def analyze(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str = "Describe the image") -> None:
-        username = interaction.user.name
         await interaction.response.defer()
-        
+
         try:
             image_data = await image.read()
             description = await recognize_image(image_data, prompt)
@@ -21,4 +20,4 @@ class Analyze(commands.Cog):
             await interaction.followup.send("There was an error processing the image. Please try again.")
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Look(bot)) 
+    await bot.add_cog(Analyze(bot))
