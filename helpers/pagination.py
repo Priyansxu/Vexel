@@ -1,6 +1,6 @@
 import discord
 
-async def send_paginated_message(channel, api_content):
+async def paginated_message(channel, api_content):
     max_chars = 2000
     start = 0
     text = api_content
