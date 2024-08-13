@@ -25,6 +25,7 @@ class Vexel(commands.Bot):
         logger.info(f"{self.user.name} is now online.")
         logger.info(f"discord.py API version: {discord.__version__}")
         logger.info(f"Python version: {platform.python_version()}")
+        logger.info(f"Running on: {platform.system()} {platform.release()} ({os.name})")
 
     async def setup_hook(self) -> None:
         for filename in os.listdir("./cogs"):
@@ -33,20 +34,12 @@ class Vexel(commands.Bot):
                 logger.info(f"Successfully loaded {filename[:-3]} command!")
         await self.tree.sync()
 
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandNotFound):
-            logger.warning(f"A command not found")
-        else:
-            logger.error(f"An error occurred: {error}")
-
 intents = discord.Intents.default()
 intents.typing = False
 intents.presences = False
 intents.message_content = False
 
 bot = Vexel(
-    command_prefix=commands.when_mentioned,
-    case_insensitive=True,
     intents=intents,
     help_command=None,
     activity=discord.Activity(type=discord.ActivityType.listening, name="@vexel"),
