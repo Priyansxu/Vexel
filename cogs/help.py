@@ -7,7 +7,7 @@ class Help(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="help", description="Display list of commands")
-    async def help_command(self, interaction: discord.Interaction) -> None:
+    async def help(self, interaction: discord.Interaction) -> None:
   
         embed = discord.Embed(
             title="Vexel - Commands",
