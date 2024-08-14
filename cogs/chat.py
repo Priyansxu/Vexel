@@ -7,24 +7,24 @@ from helpers.ai import get_response
 class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.chat_histories = {}
 
-    @app_commands.command(name="chat", description="Start chatting with Ai")
+    @app_commands.command(name="chat", description="Start chatting with AI")
     @app_commands.describe(message="What is in your mind?")
     async def chat(self, interaction: discord.Interaction, message: str):
         user_id = interaction.user.id
+        chat_histories = self.bot.conversation_histories
 
-        if user_id not in self.chat_histories:
-            self.chat_histories[user_id] = []
+        if user_id not in chat_histories:
+            chat_histories[user_id] = []
 
-        self.chat_histories[user_id].append({"role": "user", "parts": [message]}) 
+        chat_histories[user_id].append({"role": "user", "parts": [message]})
 
         await interaction.response.defer()
 
         try:
-            response = get_response(self.chat_histories[user_id])
+            response = get_response(chat_histories[user_id])
             if response:
-                self.chat_histories[user_id].append({"role": "model", "parts": [response]}) 
+                chat_histories[user_id].append({"role": "model", "parts": [response]})
                 if len(response) >= 2000:
                     await paginated_message(interaction.channel, response)
                 else:
@@ -33,16 +33,6 @@ class Chat(commands.Cog):
                 await interaction.followup.send("Sorry, I couldn't answer you right now.")
         except Exception as e:
             await interaction.followup.send("Ugh, my brain hurts, can you say that again?")
-
-    @app_commands.command(name="wipe", description="Wipe chat history")
-    async def wipe(self, interaction: discord.Interaction):
-        user_id = interaction.user.id
-
-        if user_id in self.chat_histories:
-            self.chat_histories[user_id] = []
-            await interaction.response.send_message("Your chat history has been wiped.")
-        else:
-            await interaction.response.send_message("You don't have any chat history with me")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -58,16 +48,18 @@ class Chat(commands.Cog):
         if not mention_content:
             mention_content = "Hello, how can I assist you today?"
 
-        if user_id not in self.chat_histories:
-            self.chat_histories[user_id] = []
+        chat_histories = self.bot.conversation_histories
 
-        self.chat_histories[user_id].append({"role": "user", "parts": [mention_content]}) 
+        if user_id not in chat_histories:
+            chat_histories[user_id] = []
+
+        chat_histories[user_id].append({"role": "user", "parts": [mention_content]})
 
         async with message.channel.typing():
             try:
-                response = get_response(self.chat_histories[user_id])
+                response = get_response(chat_histories[user_id])
                 if response:
-                    self.chat_histories[user_id].append({"role": "model", "parts": [response]})
+                    chat_histories[user_id].append({"role": "model", "parts": [response]})
                     if len(response) >= 2000:
                         await paginated_message(message.channel, response)
                     else:
