@@ -6,9 +6,9 @@ class Help(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="help", description="Display list of commands")
+    @app_commands.command(name="help", description="Get a list of commands")
     async def help(self, interaction: discord.Interaction) -> None:
-  
+
         embed = discord.Embed(
             title="Vexel - Commands",
             color=discord.Color(0x871ef4),
@@ -17,31 +17,31 @@ class Help(commands.Cog):
 
         embed.add_field(
             name="/chat",
-            value="Start chating with Vexel.",
+            value="Start chatting with Vexel.",
             inline=False
         )
 
         embed.add_field(
             name="/draw",
-            value="Generate an image, text-to-image generation.",
+            value="Create an image from text.",
             inline=False
         )
 
         embed.add_field(
             name="/analyze",
-            value="Recognize an image, get image description.",
+            value="Get a description of an image.",
             inline=False
         ) 
-        
+
         embed.add_field(
-            name="/modify",
-            value="Modify an image, make visual changes.",
+            name="/remix",
+            value="Make visual changes to an image.",
             inline=False
         ) 
-  
+
         embed.add_field(
             name="/wipe",
-            value="Wipe your chat history with Vexel.",
+            value="Clear chat history with Vexel.",
             inline=False
         )
         embed.set_image(url="https://vexel.vercel.app/vexel_header.png")
@@ -69,12 +69,11 @@ class Help(commands.Cog):
             )
 
             total_guilds = len(self.bot.guilds)
-            embed.add_field(name="Total Servers", value=total_guilds)
-
             ping_latency = self.bot.latency * 1000
-            embed.add_field(name="Ping Latency", value=f"{ping_latency:.2f} ms")
 
-            embed.add_field(name="Vexel Created", value="<t:1715293531:R>")
+            embed.description = (
+                f"Vexel is an AI-powered Discord bot created by [Priyanshu](https://discord.com/users/666807222042361856) <t:1715293531:R>. Vexel is currently in {total_guilds} servers, with a performance latency of {ping_latency:.2f} ms."
+            )
 
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -85,4 +84,4 @@ class Help(commands.Cog):
         await interaction.response.send_message(embed=embed, view=view)
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Help(bot)) 
+    await bot.add_cog(Help(bot))
