@@ -41,6 +41,7 @@ intents.message_content = False
 
 bot = Vexel(
     intents=intents,
+    command_prefix="",
     help_command=None,
     activity=discord.Activity(type=discord.ActivityType.listening, name="@vexel"),
     status=discord.Status.idle
