@@ -37,10 +37,13 @@ class EditView(ui.View):
                 img_file.close()
             else:
                 await self.message.edit(content="Failed to regenerate the image.")
-        self.button_state('Regenerate', False)
-        await self.message.edit(view=self)
+        except Exception:
+            pass
+        finally:
+            self.button_state('Regenerate', False)
+            await self.message.edit(view=self)
 
-class Revamp(commands.Cog):
+class Remix(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -54,17 +57,16 @@ class Revamp(commands.Cog):
                 return False
 
             return True
-        except Exception as e:
-            await interaction.response.send_message(f"Failed to check image dimensions: {e}", ephemeral=True)
+        except Exception:
             return False
 
-    @app_commands.command(name="revamp", description="Revamp an image")
-    @app_commands.describe(image="The image to revamp", prompt="What changes you would like in the image?")
-    async def revamp(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str):
+    @app_commands.command(name="remix", description="Remix an image")
+    @app_commands.describe(image="The image to remix", prompt="What changes you would like in the image?")
+    async def remix(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str):
         image_bytes = await image.read()
 
         await interaction.response.defer()
-        message = await interaction.followup.send("Revamping...")
+        message = await interaction.followup.send("Remixing...")
 
         try:
             if not await self.check_image_dimensions(interaction, image_bytes):
@@ -80,8 +82,8 @@ class Revamp(commands.Cog):
                 img_file.close()
             else:
                 await message.edit(content="Failed to generate the image.")
-        except Exception as e:
-            await message.edit(content=f"An error occurred.")
+        except Exception:
+            await message.edit(content="An error occurred.")
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Revamp(bot))
+    await bot.add_cog(Remix(bot))
