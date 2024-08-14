@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord import ui, app_commands
 from helpers.ai import get_image
 
-class DrawButton(ui.Button):
+class Button(ui.Button):
     def __init__(self, label='Regenerate', disabled=False):
         super().__init__(label=label, disabled=disabled)
 
@@ -14,16 +14,16 @@ class DrawButton(ui.Button):
         await interaction.message.edit(view=self.view)
         await self.view.draw_image()
 
-class DrawView(ui.View):
+class View(ui.View):
     def __init__(self, prompt, message):
         super().__init__()
         self.prompt = prompt
         self.message = message
-        self.add_item(DrawButton())
+        self.add_item(Button())
 
     def button_state(self, label, disabled):
         self.clear_items()
-        self.add_item(DrawButton(label=label, disabled=disabled))
+        self.add_item(Button(label=label, disabled=disabled))
 
     async def draw_image(self):
         try:
@@ -55,7 +55,7 @@ class Draw(commands.Cog):
             if response and isinstance(response, bytes):
                 img_file = io.BytesIO(response)
                 await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
-                view = DrawView(prompt, message)
+                view = View(prompt, message)
                 await message.edit(view=view)
                 img_file.close()
             else:
