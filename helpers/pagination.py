@@ -9,7 +9,7 @@ async def paginated_message(channel, api_content):
         if end > len(text):
             end = len(text)
         chunk = text[start:end]
-        chunk = chunk.replace('/', '\/')
-        chunk = chunk.replace('>', '\>')
+        chunk = chunk.replace('/', r'\/')
+        chunk = chunk.replace('>', r'\>')
         await channel.send(chunk)
         start = end
