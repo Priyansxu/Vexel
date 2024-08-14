@@ -33,11 +33,10 @@ class EditView(ui.View):
             generated_images = edit_image(self.image_bytes, self.api_content)
             if generated_images and isinstance(generated_images[0], bytes):
                 img_file = io.BytesIO(generated_images[0])
-                await self.message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
+                await self.message.edit(attachments=[discord.File(img_file, "image.png")])
                 img_file.close()
             else:
                 await self.message.edit(content="Failed to regenerate the image.")
-
         self.button_state('Regenerate', False)
         await self.message.edit(view=self)
 
@@ -65,11 +64,11 @@ class Revamp(commands.Cog):
         image_bytes = await image.read()
 
         await interaction.response.defer()
+        message = await interaction.followup.send("Revamping...")
+
         try:
             if not await self.check_image_dimensions(interaction, image_bytes):
                 return
-
-            message = await interaction.followup.send("Revamping...")
 
             generated_images = edit_image(image_bytes, prompt)
 
@@ -82,7 +81,7 @@ class Revamp(commands.Cog):
             else:
                 await message.edit(content="Failed to generate the image.")
         except Exception as e:
-            await message.edit(content=f"An error occurred while processing your request.")
+            await message.edit(content=f"An error occurred.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Revamp(bot))
