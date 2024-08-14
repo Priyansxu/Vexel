@@ -1,22 +1,24 @@
 import os
 import base64
-import aiohttp
 import imghdr
 import requests
-import mimetypes
 from dotenv import load_dotenv
 import google.generativeai as genai
 from io import BytesIO
 from PIL import Image
 from helpers.prompt import SYSTEM_PROMPT
+
 load_dotenv()
 
+# API Keys
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+# API Host and Engine Configuration
 API_HOST = "https://api.stability.ai"
-ENGINE_ID= "stable-diffusion-v1-6"
+ENGINE_ID = "stable-diffusion-v1-6"
 
+# Gemini AI Configuration
 genai.configure(api_key=GEMINI_API_KEY)
 generation_config = {
     "temperature": 1,
@@ -31,6 +33,7 @@ model = genai.GenerativeModel(
     system_instruction=SYSTEM_PROMPT,
 )
 
+# Get Text Response from Gemini Model
 def get_response(conversation):
     try:
         chat_session = model.start_chat(history=conversation)
@@ -40,30 +43,32 @@ def get_response(conversation):
         print(f"Error in get_response: {e}")
         return "Uhg my brain hurts, can you say that again?"
 
+# Recognize Image and Generate Content Based on Prompt
 async def recognize_image(image_data, prompt):
     try:
         image_format = imghdr.what(None, image_data)
-        if image_format is None:
+        if not image_format:
             return "Failed to determine image format"
 
         image = Image.open(BytesIO(image_data))
         response = model.generate_content([prompt, image])
-
         return response.text if response and hasattr(response, 'text') else "Failed to generate a response from the Gemini model"
     except Exception as e:
         print(f"Error in recognize_image: {e}")
         return None
 
+# Generate Image from Text Prompt
 def get_image(text):
     try:
-        if STABILITY_API_KEY is None:
-            raise Exception("Missing Stability API key.")
+        if not STABILITY_API_KEY:
+            raise ValueError("Missing Stability API key.")
+        
         response = requests.post(
             f"{API_HOST}/v1/generation/{ENGINE_ID}/text-to-image",
             headers={
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "Authorization": f"Bearer {STABILITY_API_KEY}"
+                "Authorization": f"Bearer {STABILITY_API_KEY}",
             },
             json={
                 "text_prompts": [{"text": text}],
@@ -75,23 +80,23 @@ def get_image(text):
             },
         )
         response.raise_for_status()
-        data = response.json()
-        image_data = data["artifacts"][0]["base64"]
+        image_data = response.json()["artifacts"][0]["base64"]
         return base64.b64decode(image_data)
     except Exception as e:
         print(f"Error in get_image: {e}")
         return None
-    
+
+# Edit Image Based on Prompt
 def edit_image(image_bytes, prompt):
     try:
         response = requests.post(
             f"{API_HOST}/v1/generation/{ENGINE_ID}/image-to-image",
             headers={
                 "Accept": "application/json",
-                "Authorization": f"Bearer {STABILITY_API_KEY}"
+                "Authorization": f"Bearer {STABILITY_API_KEY}",
             },
             files={
-                "init_image": ('init_image.png', image_bytes, 'image/png')
+                "init_image": ('init_image.png', image_bytes, 'image/png'),
             },
             data={
                 "image_strength": 0.35,
@@ -100,12 +105,11 @@ def edit_image(image_bytes, prompt):
                 "cfg_scale": 7,
                 "samples": 1,
                 "steps": 30,
-            }
+            },
         )
 
         response.raise_for_status()
-        data = response.json()
-        image_data = data["artifacts"][0]["base64"]
+        image_data = response.json()["artifacts"][0]["base64"]
         return base64.b64decode(image_data)
     except Exception as e:
         print(f"Error in edit_image: {e}")
