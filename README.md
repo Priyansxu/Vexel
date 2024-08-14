@@ -7,7 +7,7 @@
 - **/chat**: Start your chat with Ai!
 - **/draw**: Transform text into captivating images.
 - **/analyze**: Attach an image to analyse.
-- **/modify**: Attach an image to edit it.
+- **/remix**: Attach an image to edit it.
 - **/wipe**: Wipe your chat history with Vexel.
 
 ## Getting Started
