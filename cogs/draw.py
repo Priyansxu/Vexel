@@ -61,7 +61,7 @@ class Draw(commands.Cog):
             else:
                 await message.edit(content="Failed to generate the image.")
         except Exception:
-            await message.edit(content="An error occurred.")
+            await message.edit(content="An error occurred while processing your request.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Draw(bot))
