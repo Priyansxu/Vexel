@@ -34,8 +34,11 @@ class DrawView(ui.View):
                 img_file.close()
             else:
                 await self.message.edit(content="Failed to regenerate the image.")
-        self.button_state('Regenerate', False)
-        await self.message.edit(view=self)
+        except Exception:
+            pass
+        finally:
+            self.button_state('Regenerate', False)
+            await self.message.edit(view=self)
 
 class Draw(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -57,8 +60,8 @@ class Draw(commands.Cog):
                 img_file.close()
             else:
                 await message.edit(content="Failed to generate the image.")
-        except Exception as e:
-            await message.edit(content=f"An error occurred.")
+        except Exception:
+            await message.edit(content="An error occurred.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Draw(bot))
