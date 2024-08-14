@@ -26,13 +26,14 @@ class DrawView(ui.View):
         self.add_item(DrawButton(label=label, disabled=disabled))
 
     async def draw_image(self):
-        response = get_image(self.prompt)
-        if response and isinstance(response, bytes):
-            img_file = io.BytesIO(response)
-            await self.message.edit(attachments=[discord.File(img_file, "image.png")])
-            img_file.close()
-        else:
-            await self.message.edit(content="Failed to regenerate the image.")
+        try:
+            response = get_image(self.prompt)
+            if response and isinstance(response, bytes):
+                img_file = io.BytesIO(response)
+                await self.message.edit(attachments=[discord.File(img_file, "image.png")])
+                img_file.close()
+            else:
+                await self.message.edit(content="Failed to regenerate the image.")
         self.button_state('Regenerate', False)
         await self.message.edit(view=self)
 
@@ -46,16 +47,18 @@ class Draw(commands.Cog):
         await interaction.response.defer()
         message = await interaction.followup.send("Drawing...")
 
-        response = get_image(prompt)
-
-        if response and isinstance(response, bytes):
-            img_file = io.BytesIO(response)
-            await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
-            view = DrawView(prompt, message)
-            await message.edit(view=view)
-            img_file.close()
-        else:
-            await message.edit(content="Failed to generate the image.")
+        try:
+            response = get_image(prompt)
+            if response and isinstance(response, bytes):
+                img_file = io.BytesIO(response)
+                await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
+                view = DrawView(prompt, message)
+                await message.edit(view=view)
+                img_file.close()
+            else:
+                await message.edit(content="Failed to generate the image.")
+        except Exception as e:
+            await message.edit(content=f"An error occurred.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Draw(bot))
