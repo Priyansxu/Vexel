@@ -5,7 +5,7 @@ from discord import app_commands, ui
 from helpers.ai import edit_image
 from PIL import Image
 
-class EditButton(ui.Button):
+class RemixButton(ui.Button):
     def __init__(self, label='Regenerate', disabled=False):
         super().__init__(label=label, disabled=disabled)
 
@@ -15,18 +15,18 @@ class EditButton(ui.Button):
         await interaction.message.edit(view=self.view)
         await self.view.edit_image()
 
-class EditView(ui.View):
+class RemixView(ui.View):
     def __init__(self, prompt, image_bytes, message, api_content):
         super().__init__()
         self.prompt = prompt
         self.image_bytes = image_bytes
         self.message = message
         self.api_content = api_content
-        self.add_item(EditButton())
+        self.add_item(RemixButton())
 
     def button_state(self, label, disabled):
         self.clear_items()
-        self.add_item(EditButton(label=label, disabled=disabled))
+        self.add_item(RemixButton(label=label, disabled=disabled))
 
     async def edit_image(self):
         try:
@@ -77,7 +77,7 @@ class Remix(commands.Cog):
             if generated_images and isinstance(generated_images[0], bytes):
                 img_file = io.BytesIO(generated_images[0])
                 await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
-                view = EditView(prompt, image_bytes, message, prompt)
+                view = RemixView(prompt, image_bytes, message, prompt)
                 await message.edit(view=view)
                 img_file.close()
             else:
