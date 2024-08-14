@@ -33,19 +33,18 @@ class EditView(ui.View):
             generated_images = edit_image(self.image_bytes, self.api_content)
             if generated_images and isinstance(generated_images[0], bytes):
                 img_file = io.BytesIO(generated_images[0])
-                await self.message.edit(attachments=[discord.File(img_file, "image.png")])
+                await self.message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
                 img_file.close()
             else:
                 await self.message.edit(content="Failed to regenerate the image.")
-        except Exception as e:
-            await self.message.edit(content=f"Failed to generate image: {e}")
+
         self.button_state('Regenerate', False)
         await self.message.edit(view=self)
 
 class Revamp(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
- 
+
     async def check_image_dimensions(self, interaction, image_bytes):
         try:
             image = Image.open(io.BytesIO(image_bytes))
@@ -70,18 +69,20 @@ class Revamp(commands.Cog):
             if not await self.check_image_dimensions(interaction, image_bytes):
                 return
 
+            message = await interaction.followup.send("Revamping...")
+
             generated_images = edit_image(image_bytes, prompt)
 
             if generated_images and isinstance(generated_images[0], bytes):
                 img_file = io.BytesIO(generated_images[0])
-                message = await interaction.followup.send(file=discord.File(img_file, "image.png"))
+                await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
                 view = EditView(prompt, image_bytes, message, prompt)
                 await message.edit(view=view)
                 img_file.close()
             else:
-                await interaction.followup.send("Failed to generate the image.")
+                await message.edit(content="Failed to generate the image.")
         except Exception as e:
-            await interaction.followup.send(f"An error occurred while processing your request.")
+            await message.edit(content=f"An error occurred while processing your request.")
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Revamp(bot)) 
+    await bot.add_cog(Revamp(bot))
