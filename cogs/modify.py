@@ -30,9 +30,9 @@ class View(ui.View):
 
     async def edit_image(self):
         try:
-            generated_images = edit_image(self.image_bytes, self.api_content)
-            if generated_images and isinstance(generated_images[0], bytes):
-                img_file = io.BytesIO(generated_images[0])
+            remix_image = edit_image(self.image_bytes, self.api_content)
+            if remix_image and isinstance(remix_image, bytes):
+                img_file = io.BytesIO(remix_image)
                 await self.message.edit(attachments=[discord.File(img_file, "image.png")])
                 img_file.close()
             else:
@@ -72,10 +72,10 @@ class Remix(commands.Cog):
             if not await self.check_image_dimensions(interaction, image_bytes):
                 return
 
-            generated_images = edit_image(image_bytes, prompt)
+            remix_image = edit_image(image_bytes, prompt)
 
-            if generated_images and isinstance(generated_images[0], bytes):
-                img_file = io.BytesIO(generated_images[0])
+            if remix_image and isinstance(remix_image, bytes):
+                img_file = io.BytesIO(remix_image)
                 await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
                 view = View(prompt, image_bytes, message, prompt)
                 await message.edit(view=view)
