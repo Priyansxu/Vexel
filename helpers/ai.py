@@ -10,15 +10,11 @@ from helpers.prompt import SYSTEM_PROMPT
 
 load_dotenv()
 
-# API Keys
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-# API Host and Engine Configuration
 API_HOST = "https://api.stability.ai"
 ENGINE_ID = "stable-diffusion-v1-6"
 
-# Gemini AI Configuration
 genai.configure(api_key=GEMINI_API_KEY)
 generation_config = {
     "temperature": 1,
@@ -33,7 +29,6 @@ model = genai.GenerativeModel(
     system_instruction=SYSTEM_PROMPT,
 )
 
-# Get Text Response from Gemini Model
 def get_response(conversation):
     try:
         chat_session = model.start_chat(history=conversation)
@@ -43,21 +38,19 @@ def get_response(conversation):
         print(f"Error in get_response: {e}")
         return "Uhg my brain hurts, can you say that again?"
 
-# Recognize Image and Generate Content Based on Prompt
 async def recognize_image(image_data, prompt):
     try:
         image_format = imghdr.what(None, image_data)
         if not image_format:
-            return "Failed to determine image format"
+            return "Failed to determine image format."
 
         image = Image.open(BytesIO(image_data))
         response = model.generate_content([prompt, image])
-        return response.text if response and hasattr(response, 'text') else "Failed to generate a response from the Gemini model"
+        return response.text if response and hasattr(response, 'text') else "Failed to generate a response."
     except Exception as e:
         print(f"Error in recognize_image: {e}")
         return None
 
-# Generate Image from Text Prompt
 def get_image(text):
     try:
         if not STABILITY_API_KEY:
@@ -86,7 +79,6 @@ def get_image(text):
         print(f"Error in get_image: {e}")
         return None
 
-# Edit Image Based on Prompt
 def edit_image(image_bytes, prompt):
     try:
         response = requests.post(
