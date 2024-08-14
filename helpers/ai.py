@@ -18,7 +18,6 @@ API_HOST = "https://api.stability.ai"
 ENGINE_ID= "stable-diffusion-v1-6"
 
 genai.configure(api_key=GEMINI_API_KEY)
-
 generation_config = {
     "temperature": 1,
     "top_p": 0.95,
@@ -26,7 +25,6 @@ generation_config = {
     "max_output_tokens": 8192,
     "response_mime_type": "text/plain",
 }
-
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config=generation_config,
@@ -107,13 +105,8 @@ def edit_image(image_bytes, prompt):
 
         response.raise_for_status()
         data = response.json()
-        images = data.get("artifacts", [])
-
-        if not images:
-            raise Exception("No images generated.")
-
-        return [base64.b64decode(image["base64"]) for image in images]
-
+        image_data = data["artifacts"][0]["base64"]
+        return base64.b64decode(image_data)
     except Exception as e:
         print(f"Error in edit_image: {e}")
-        return None 
+        return None
