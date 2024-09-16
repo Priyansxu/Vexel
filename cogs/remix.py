@@ -65,13 +65,13 @@ class Remix(commands.Cog):
     async def remix(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str):
         image_bytes = await image.read()
 
+        if not await self.check_image_dimensions(interaction, image_bytes):
+            return
+
         await interaction.response.defer()
         message = await interaction.followup.send("Remixing...")
 
         try:
-            if not await self.check_image_dimensions(interaction, image_bytes):
-                return
-
             remix_image = edit_image(image_bytes, prompt)
 
             if remix_image and isinstance(remix_image, bytes):
