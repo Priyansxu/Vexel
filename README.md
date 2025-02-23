@@ -19,7 +19,7 @@
 
 2. **Install dependencies**:
    ```bash
-   pip install requirements.txt
+   pip install -r requirements.txt
    ```
 
 3. **Configure your bot**:
