@@ -12,8 +12,9 @@ load_dotenv()
 
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 API_HOST = "https://api.stability.ai"
-ENGINE_ID = "stable-diffusion-v1-6"
+ENGINE_ID = "stable-diffusion-xl-1024-v1-0"
 
 genai.configure(api_key=GEMINI_API_KEY)
 generation_config = {
