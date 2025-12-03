@@ -23,7 +23,7 @@
    ```
 
 3. **Configure your bot**:
- - Set up your `.env` with your Discord bot token, [Gemini Api key](https://aistudio.google.com/app/apikey) and [StabilityAi Api key](https://dreamstudio.ai/account).
+ - Set up your `.env` with your Discord bot token, [Gemini Api key](https://aistudio.google.com/app/apikey) and [StabilityAi Api key](https://platform.stability.ai/account/keys).
 
 ---
 
