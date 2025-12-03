@@ -13,6 +13,7 @@ load_dotenv()
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+GEMINI_MODEL = "gemini-2.5-flash-lite"
 API_HOST = "https://api.stability.ai"
 ENGINE_ID = "stable-diffusion-xl-1024-v1-0"
 
@@ -25,7 +26,7 @@ generation_config = {
     "response_mime_type": "text/plain",
 }
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+    model_name=GEMINI_MODEL,
     generation_config=generation_config,
     system_instruction=SYSTEM_PROMPT,
 )
