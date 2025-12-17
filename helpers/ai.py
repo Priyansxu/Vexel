@@ -3,38 +3,38 @@ import base64
 import imghdr
 import requests
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from io import BytesIO
 from PIL import Image
-from helpers.prompt import SYSTEM_PROMPT
 
 load_dotenv()
 
+SYSTEM_PROMPT = ""
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
 GEMINI_MODEL = "gemini-2.5-flash-lite"
 API_HOST = "https://api.stability.ai"
 ENGINE_ID = "stable-diffusion-xl-1024-v1-0"
 
-genai.configure(api_key=GEMINI_API_KEY)
-generation_config = {
-    "temperature": 1,
-    "top_p": 0.95,
-    "top_k": 64,
-    "max_output_tokens": 8192,
-    "response_mime_type": "text/plain",
-}
-model = genai.GenerativeModel(
-    model_name=GEMINI_MODEL,
-    generation_config=generation_config,
+client = genai.Client(api_key=GEMINI_API_KEY)
+
+generation_config = types.GenerateContentConfig(
+    temperature=1,
+    top_p=0.95,
+    top_k=64,
+    max_output_tokens=8192,
     system_instruction=SYSTEM_PROMPT,
 )
 
 def get_response(conversation):
     try:
-        chat_session = model.start_chat(history=conversation)
-        response = chat_session.send_message(conversation[-1]['parts'][0])
+        chat = client.chats.create(
+            model=GEMINI_MODEL,
+            config=generation_config,
+            history=conversation[:-1]
+        )
+        response = chat.send_message(conversation[-1]['parts'][0])
         return response.text if response and response.text else "Sorry, I couldn't generate a response."
     except Exception as e:
         print(f"Error in get_response: {e}")
@@ -47,7 +47,14 @@ async def recognize_image(image_data, prompt):
             return "Failed to determine image format."
 
         image = Image.open(BytesIO(image_data))
-        response = model.generate_content([prompt, image])
+        if image.mode == 'RGBA':
+            image = image.convert('RGB')
+
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=[prompt, image],
+            config=generation_config
+        )
         return response.text if response and hasattr(response, 'text') else "Failed to generate a response."
     except Exception as e:
         print(f"Error in recognize_image: {e}")
@@ -57,7 +64,7 @@ def get_image(text):
     try:
         if not STABILITY_API_KEY:
             raise ValueError("Missing Stability API key.")
-        
+
         response = requests.post(
             f"{API_HOST}/v1/generation/{ENGINE_ID}/text-to-image",
             headers={
@@ -101,7 +108,6 @@ def edit_image(image_bytes, prompt):
                 "steps": 30,
             },
         )
-
         response.raise_for_status()
         image_data = response.json()["artifacts"][0]["base64"]
         return base64.b64decode(image_data)
