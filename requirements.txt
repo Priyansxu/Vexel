@@ -5,5 +5,5 @@ requests
 aiohttp
 certifi
 async-timeout
-google-generativeai 
+google-genai
 pillow 
