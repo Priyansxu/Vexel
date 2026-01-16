@@ -31,6 +31,9 @@ generation_config = types.GenerateContentConfig(
 
 def get_response(conversation):
     try:
+        if not GEMINI_API_KEY:
+            raise ValueError("Missing Gemini API key.")
+        
         chat = client.chats.create(
             model=GEMINI_MODEL,
             config=generation_config,
@@ -42,8 +45,11 @@ def get_response(conversation):
         print(f"Error in get_response: {e}")
         return "Uhg my brain hurts, can you say that again?"
 
-async def recognize_image(image_data, prompt):
+def recognize_image(image_data, prompt):
     try:
+        if not GEMINI_API_KEY:
+            raise ValueError("Missing Gemini API key.")
+        
         image_format = imghdr.what(None, image_data)
         if not image_format:
             return "Failed to determine image format."
@@ -95,7 +101,7 @@ def edit_image(image_bytes, prompt):
             raise ValueError("Missing Cloudflare credentials.")
 
         image_b64 = base64.b64encode(image_bytes).decode("utf-8")
-        
+
         payload = {
             "prompt": prompt,
             "image": [image_b64],
