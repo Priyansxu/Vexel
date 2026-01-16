@@ -15,7 +15,7 @@ class Wipe(commands.Cog):
             chat_histories[user_id] = []
             await interaction.response.send_message("Your chat history has been wiped.")
         else:
-            await interaction.response.send_message("You don't have any chat history with me")
+            await interaction.response.send_message("You don't have any chat history with me.")
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Wipe(bot))
