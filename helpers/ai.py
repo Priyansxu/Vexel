@@ -48,8 +48,6 @@ def get_response(conversation):
 
     except Exception as e:
         print(f"Error in get_response: {e}")
-        import traceback
-        traceback.print_exc()
         return "Uhg my brain hurts, can you say that again?"
 
 async def recognize_image(image_data, prompt):
