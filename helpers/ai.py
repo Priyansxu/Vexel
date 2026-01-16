@@ -34,7 +34,7 @@ def get_response(conversation):
         if not GEMINI_API_KEY:
             raise ValueError("Missing Gemini API key.")
         
-        last_message = conversation[-1]["parts"][0]["text"]
+        message = conversation[-1]["parts"][0]["text"]
         history = conversation[:-1]
         
         chat = client.chats.create(
@@ -43,7 +43,7 @@ def get_response(conversation):
             history=history
         )
         
-        response = chat.send_message(last_message)
+        response = chat.send_message(message)
         
         return response.text if response and hasattr(response, 'text') else "Sorry, I couldn't generate a response."
         
