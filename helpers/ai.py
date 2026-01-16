@@ -52,7 +52,7 @@ def get_response(conversation):
         traceback.print_exc()
         return "Uhg my brain hurts, can you say that again?"
 
-def recognize_image(image_data, prompt):
+async def recognize_image(image_data, prompt):
     try:
         if not GEMINI_API_KEY:
             raise ValueError("Missing Gemini API key.")
