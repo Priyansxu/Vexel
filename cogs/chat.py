@@ -49,37 +49,35 @@ class Chat(commands.Cog):
             await self.on_mention(message)
 
     async def on_mention(self, message):
-        user_id = message.author.id
-        mention_content = message.content.replace(f"<@{self.bot.user.id}>", "").strip()
-        if not mention_content:
-            mention_content = "Hello, how can I assist you today?"
+    user_id = message.author.id
+    content = message.content
 
-        chat_histories = self.bot.conversation_histories
+    chat_histories = self.bot.conversation_histories
 
-        if user_id not in chat_histories:
-            chat_histories[user_id] = []
+    if user_id not in chat_histories:
+        chat_histories[user_id] = []
 
-        chat_histories[user_id].append({
-            "role": "user",
-            "parts": [{"type": "text", "text": mention_content}]
-        })
+    chat_histories[user_id].append({
+        "role": "user",
+        "parts": [{"text": content}]
+    })
 
-        async with message.channel.typing():
-            try:
-                response = get_response(chat_histories[user_id])
-                if response:
-                    chat_histories[user_id].append({
-                        "role": "model",
-                        "parts": [{"type": "text", "text": response}]
-                    })
-                    if len(response) >= 2000:
-                        await paginated_message(message.channel, response)
-                    else:
-                        await message.reply(response)
+    async with message.channel.typing():
+        try:
+            response = get_response(chat_histories[user_id])
+            if response:
+                chat_histories[user_id].append({
+                    "role": "model",
+                    "parts": [{"text": response}]
+                })
+                if len(response) >= 2000:
+                    await paginated_message(message.channel, response)
                 else:
-                    await message.reply("Sorry, I couldn't answer you right now.")
-            except Exception as e:
-                print(f"Error in on_mention: {e}")
+                    await message.reply(response)
+            else:
+                await message.reply("Sorry, I couldn't answer you right now.")
+        except Exception as e:
+            print(f"Error in on_mention: {e}")
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Chat(bot))
