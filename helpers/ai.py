@@ -33,20 +33,19 @@ def get_response(conversation):
     try:
         if not GEMINI_API_KEY:
             raise ValueError("Missing Gemini API key.")
-        
+
         message = conversation[-1]["parts"][0]["text"]
         history = conversation[:-1]
-        
+
         chat = client.chats.create(
             model=GEMINI_MODEL,
             config=generation_config,
             history=history
         )
-        
+
         response = chat.send_message(message)
-        
-        return response.text if response and hasattr(response, 'text') else "Sorry, I couldn't generate a response."
-        
+        return response.text if response and hasattr(response, "text") else "Sorry, I couldn't generate a response."
+
     except Exception as e:
         print(f"Error in get_response: {e}")
         import traceback
@@ -57,7 +56,7 @@ def recognize_image(image_data, prompt):
     try:
         if not GEMINI_API_KEY:
             raise ValueError("Missing Gemini API key.")
-        
+
         image_format = imghdr.what(None, image_data)
         if not image_format:
             return "Failed to determine image format."
