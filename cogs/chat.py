@@ -18,9 +18,9 @@ class Chat(commands.Cog):
             chat_histories[user_id] = []
 
         chat_histories[user_id].append({
-    "role": "user",
-    "parts": [{"type": "text", "text": message}]
-})
+            "role": "user",
+            "parts": [{"type": "text", "text": message}]
+        })
 
         await interaction.response.defer()
 
@@ -28,9 +28,9 @@ class Chat(commands.Cog):
             response = get_response(chat_histories[user_id])
             if response:
                 chat_histories[user_id].append({
-    "role": "model",
-    "parts": [{"type": "text", "text": response}]
-})
+                    "role": "model",
+                    "parts": [{"type": "text", "text": response}]
+                })
                 if len(response) >= 2000:
                     await paginated_message(interaction.channel, response)
                 else:
@@ -59,13 +59,19 @@ class Chat(commands.Cog):
         if user_id not in chat_histories:
             chat_histories[user_id] = []
 
-        chat_histories[user_id].append({"role": "user", "parts": [mention_content]})
+        chat_histories[user_id].append({
+            "role": "user",
+            "parts": [{"type": "text", "text": mention_content}]
+        })
 
         async with message.channel.typing():
             try:
                 response = get_response(chat_histories[user_id])
                 if response:
-                    chat_histories[user_id].append({"role": "model", "parts": [response]})
+                    chat_histories[user_id].append({
+                        "role": "model",
+                        "parts": [{"type": "text", "text": response}]
+                    })
                     if len(response) >= 2000:
                         await paginated_message(message.channel, response)
                     else:
