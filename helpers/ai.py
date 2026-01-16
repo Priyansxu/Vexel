@@ -92,25 +92,21 @@ def edit_image(image_bytes, prompt):
         image_b64 = base64.b64encode(image_bytes).decode("utf-8")
         payload = {
             "prompt": prompt,
-            "image_b64": image_b64,
+            "image": [image_b64],
             "strength": 0.35,
             "guidance": 7.5,
             "num_steps": 20
         }
-        url = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/run/{MODEL}"
         response = requests.post(
-            url,
+            f"{CF_API_HOST}/{CF_MODEL}",
             headers={
-                "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+                "Authorization": f"Bearer {CF_API_TOKEN}",
                 "Content-Type": "application/json"
             },
             json=payload
         )
         response.raise_for_status()
-        data = response.json()
-        if "result" in data:
-            return base64.b64decode(data["result"])
-        return None
+        return response.content
     except Exception as e:
         print(f"Error in edit_image: {e}")
         return None
