@@ -17,14 +17,20 @@ class Chat(commands.Cog):
         if user_id not in chat_histories:
             chat_histories[user_id] = []
 
-        chat_histories[user_id].append({"role": "user", "parts": [message]})
+        chat_histories[user_id].append({
+    "role": "user",
+    "parts": [{"type": "text", "text": message}]
+})
 
         await interaction.response.defer()
 
         try:
             response = get_response(chat_histories[user_id])
             if response:
-                chat_histories[user_id].append({"role": "model", "parts": [response]})
+                chat_histories[user_id].append({
+    "role": "model",
+    "parts": [{"type": "text", "text": response}]
+})
                 if len(response) >= 2000:
                     await paginated_message(interaction.channel, response)
                 else:
