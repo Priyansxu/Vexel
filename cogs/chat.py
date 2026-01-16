@@ -7,6 +7,8 @@ from helpers.ai import get_response
 class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        if not hasattr(bot, "conversation_histories"):
+            bot.conversation_histories = {}
 
     @app_commands.command(name="chat", description="Start chatting with AI")
     @app_commands.describe(message="What is in your mind?")
@@ -19,7 +21,7 @@ class Chat(commands.Cog):
 
         chat_histories[user_id].append({
             "role": "user",
-            "parts": [{"type": "text", "text": message}]
+            "parts": [{"text": message}]
         })
 
         await interaction.response.defer()
@@ -29,7 +31,7 @@ class Chat(commands.Cog):
             if response:
                 chat_histories[user_id].append({
                     "role": "model",
-                    "parts": [{"type": "text", "text": response}]
+                    "parts": [{"text": response}]
                 })
                 if len(response) >= 2000:
                     await paginated_message(interaction.channel, response)
@@ -37,47 +39,46 @@ class Chat(commands.Cog):
                     await interaction.followup.send(response)
             else:
                 await interaction.followup.send("Sorry, I couldn't answer you right now.")
-        except Exception as e:
+        except Exception:
             await interaction.followup.send("Ugh, my brain hurts, can you say that again?")
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
 
         if self.bot.user.mentioned_in(message) and not message.mention_everyone:
             await self.on_mention(message)
 
-    async def on_mention(self, message):
-    user_id = message.author.id
-    content = message.content
+    async def on_mention(self, message: discord.Message):
+        user_id = message.author.id
+        content = message.content
+        chat_histories = self.bot.conversation_histories
 
-    chat_histories = self.bot.conversation_histories
+        if user_id not in chat_histories:
+            chat_histories[user_id] = []
 
-    if user_id not in chat_histories:
-        chat_histories[user_id] = []
+        chat_histories[user_id].append({
+            "role": "user",
+            "parts": [{"text": content}]
+        })
 
-    chat_histories[user_id].append({
-        "role": "user",
-        "parts": [{"text": content}]
-    })
-
-    async with message.channel.typing():
-        try:
-            response = get_response(chat_histories[user_id])
-            if response:
-                chat_histories[user_id].append({
-                    "role": "model",
-                    "parts": [{"text": response}]
-                })
-                if len(response) >= 2000:
-                    await paginated_message(message.channel, response)
+        async with message.channel.typing():
+            try:
+                response = get_response(chat_histories[user_id])
+                if response:
+                    chat_histories[user_id].append({
+                        "role": "model",
+                        "parts": [{"text": response}]
+                    })
+                    if len(response) >= 2000:
+                        await paginated_message(message.channel, response)
+                    else:
+                        await message.reply(response)
                 else:
-                    await message.reply(response)
-            else:
-                await message.reply("Sorry, I couldn't answer you right now.")
-        except Exception as e:
-            print(f"Error in on_mention: {e}")
+                    await message.reply("Sorry, I couldn't answer you right now.")
+            except Exception as e:
+                print(f"Error in on_mention: {e}")
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Chat(bot))
