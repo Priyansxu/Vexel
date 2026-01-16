@@ -7,15 +7,17 @@ from google import genai
 from google.genai import types
 from io import BytesIO
 from PIL import Image
+from prompts.py import SYSTEM_PROMPT
 
 load_dotenv()
 
-SYSTEM_PROMPT = ""
-STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+CF_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
+CF_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+
 GEMINI_MODEL = "gemini-2.5-flash-lite"
-API_HOST = "https://api.stability.ai"
-ENGINE_ID = "stable-diffusion-xl-1024-v1-0"
+CF_MODEL = "@cf/stabilityai/stable-diffusion-xl-base-1.0"
+CF_API_HOST = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run"
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -34,7 +36,7 @@ def get_response(conversation):
             config=generation_config,
             history=conversation[:-1]
         )
-        response = chat.send_message(conversation[-1]['parts'][0])
+        response = chat.send_message(conversation[-1]["parts"][0])
         return response.text if response and response.text else "Sorry, I couldn't generate a response."
     except Exception as e:
         print(f"Error in get_response: {e}")
@@ -47,70 +49,67 @@ async def recognize_image(image_data, prompt):
             return "Failed to determine image format."
 
         image = Image.open(BytesIO(image_data))
-        if image.mode == 'RGBA':
-            image = image.convert('RGB')
+        if image.mode == "RGBA":
+            image = image.convert("RGB")
 
         response = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=[prompt, image],
             config=generation_config
         )
-        return response.text if response and hasattr(response, 'text') else "Failed to generate a response."
+        return response.text if response and hasattr(response, "text") else "Failed to generate a response."
     except Exception as e:
         print(f"Error in recognize_image: {e}")
         return None
 
-def get_image(text):
+def get_image(prompt):
     try:
-        if not STABILITY_API_KEY:
-            raise ValueError("Missing Stability API key.")
+        if not CF_API_TOKEN or not CF_ACCOUNT_ID:
+            raise ValueError("Missing Cloudflare credentials.")
 
         response = requests.post(
-            f"{API_HOST}/v1/generation/{ENGINE_ID}/text-to-image",
+            f"{CF_API_HOST}/{CF_MODEL}",
             headers={
+                "Authorization": f"Bearer {CF_API_TOKEN}",
                 "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": f"Bearer {STABILITY_API_KEY}",
             },
             json={
-                "text_prompts": [{"text": text}],
-                "cfg_scale": 7,
-                "height": 1024,
+                "prompt": prompt,
                 "width": 1024,
-                "samples": 1,
-                "steps": 30,
+                "height": 1024,
+                "num_steps": 20,
+                "guidance": 7.5,
             },
         )
         response.raise_for_status()
-        image_data = response.json()["artifacts"][0]["base64"]
-        return base64.b64decode(image_data)
+        return response.content
     except Exception as e:
         print(f"Error in get_image: {e}")
         return None
 
 def edit_image(image_bytes, prompt):
     try:
+        if not CF_API_TOKEN or not CF_ACCOUNT_ID:
+            raise ValueError("Missing Cloudflare credentials.")
+
+        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+
         response = requests.post(
-            f"{API_HOST}/v1/generation/{ENGINE_ID}/image-to-image",
+            f"{CF_API_HOST}/{CF_MODEL}",
             headers={
-                "Accept": "application/json",
-                "Authorization": f"Bearer {STABILITY_API_KEY}",
+                "Authorization": f"Bearer {CF_API_TOKEN}",
+                "Content-Type": "application/json",
             },
-            files={
-                "init_image": ('init_image.png', image_bytes, 'image/png'),
-            },
-            data={
-                "image_strength": 0.35,
-                "init_image_mode": "IMAGE_STRENGTH",
-                "text_prompts[0][text]": prompt,
-                "cfg_scale": 7,
-                "samples": 1,
-                "steps": 30,
+            json={
+                "prompt": prompt,
+                "image_b64": image_b64,
+                "strength": 0.35,
+                "num_steps": 20,
+                "guidance": 7.5,
             },
         )
         response.raise_for_status()
-        image_data = response.json()["artifacts"][0]["base64"]
-        return base64.b64decode(image_data)
+        return response.content
     except Exception as e:
         print(f"Error in edit_image: {e}")
         return None
