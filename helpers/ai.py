@@ -7,7 +7,7 @@ from google import genai
 from google.genai import types
 from io import BytesIO
 from PIL import Image
-from prompts.py import SYSTEM_PROMPT
+from prompt import SYSTEM_PROMPT
 
 load_dotenv()
 
