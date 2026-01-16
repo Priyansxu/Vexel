@@ -7,17 +7,17 @@ from PIL import Image
 
 class Button(ui.Button):
     def __init__(self, label='Regenerate', disabled=False):
-        super().__init__(label=label, disabled=disabled)
+        super().__init__(label=label, disabled=disabled, style=discord.ButtonStyle.primary)
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
         self.view.button_state('Regenerating...', True)
-        await interaction.message.edit(view=self.view)
-        await self.view.edit_image()
+        await interaction.edit_original_response(view=self.view)
+        await self.view.edit_image(interaction)
 
 class View(ui.View):
     def __init__(self, prompt, image_bytes, message, api_content):
-        super().__init__()
+        super().__init__(timeout=180)
         self.prompt = prompt
         self.image_bytes = image_bytes
         self.message = message
@@ -28,20 +28,30 @@ class View(ui.View):
         self.clear_items()
         self.add_item(Button(label=label, disabled=disabled))
 
-    async def edit_image(self):
+    async def edit_image(self, interaction: discord.Interaction = None):
         try:
             remix_image = edit_image(self.image_bytes, self.api_content)
             if remix_image and isinstance(remix_image, bytes):
                 img_file = io.BytesIO(remix_image)
-                await self.message.edit(attachments=[discord.File(img_file, "image.png")])
-                img_file.close()
+                file = discord.File(img_file, filename="image.png")
+
+                if interaction:
+                    await interaction.edit_original_response(attachments=[file])
+                else:
+                    await self.message.edit(attachments=[file])
             else:
-                await self.message.edit(content="Failed to regenerate the image.")
+                if interaction:
+                    await interaction.followup.send("Failed to regenerate.", ephemeral=True)
+                else:
+                    await self.message.edit(content="Failed to regenerate the image.")
         except Exception:
             pass
         finally:
             self.button_state('Regenerate', False)
-            await self.message.edit(view=self)
+            if interaction:
+                await interaction.edit_original_response(view=self)
+            else:
+                await self.message.edit(view=self)
 
 class Remix(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -72,17 +82,18 @@ class Remix(commands.Cog):
 
         try:
             remix_image = edit_image(image_bytes, prompt)
-
             if remix_image and isinstance(remix_image, bytes):
                 img_file = io.BytesIO(remix_image)
-                await message.edit(content=None, attachments=[discord.File(img_file, "image.png")])
-                view = View(prompt, image_bytes, message, prompt)
-                await message.edit(view=view)
-                img_file.close()
+                file = discord.File(img_file, filename="image.png")
+
+                await interaction.followup.send(file=file)
+
+                message_obj = await interaction.original_response()
+                await interaction.edit_original_response(view=View(prompt, image_bytes, message_obj, prompt))
             else:
-                await message.edit(content="Failed to generate the image.")
+                await interaction.followup.send("Failed to generate image.", ephemeral=True)
         except Exception:
-            await message.edit(content="An error occurred while processing your request.")
+            await interaction.followup.send("An error occurred.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Remix(bot))
