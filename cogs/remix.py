@@ -68,8 +68,7 @@ class Remix(commands.Cog):
         if not await self.check_image_dimensions(interaction, image_bytes):
             return
 
-        await interaction.response.defer()
-        message = await interaction.followup.send("Remixing...")
+        await interaction.response.defer(thinking=True)
 
         try:
             remix_image = edit_image(image_bytes, prompt)
