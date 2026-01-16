@@ -80,21 +80,19 @@ def get_image(prompt):
         if not CF_API_TOKEN or not CF_ACCOUNT_ID:
             raise ValueError("Missing Cloudflare credentials.")
 
-        payload = {
-            "prompt": prompt,
-            "width": 1024,
-            "height": 1024,
-            "num_steps": 20,
-            "guidance": 7.5,
-        }
-
         response = requests.post(
             f"{CF_API_HOST}/{CF_MODEL}",
             headers={
                 "Authorization": f"Bearer {CF_API_TOKEN}",
                 "Content-Type": "application/json",
             },
-            json=payload,
+            json={
+                "prompt": prompt,
+                "width": 1024,
+                "height": 1024,
+                "num_steps": 20,
+                "guidance": 7.5,
+            },
         )
         response.raise_for_status()
         return response.content
@@ -109,21 +107,19 @@ def edit_image(image_bytes, prompt):
 
         image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
-        payload = {
-            "prompt": prompt,
-            "image": [image_b64],
-            "strength": 0.35,
-            "guidance": 7.5,
-            "num_steps": 20
-        }
-
         response = requests.post(
             f"{CF_API_HOST}/{CF_MODEL}",
             headers={
                 "Authorization": f"Bearer {CF_API_TOKEN}",
                 "Content-Type": "application/json"
             },
-            json=payload
+            json={
+                "prompt": prompt,
+                "image_b64": image_b64,
+                "strength": 0.35,
+                "guidance": 7.5,
+                "num_steps": 20
+            }
         )
         response.raise_for_status()
         return response.content
