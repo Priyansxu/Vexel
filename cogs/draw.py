@@ -1,8 +1,9 @@
 import io
 import discord
 from discord.ext import commands
-from discord import ui, app_commands
-from helpers.ai import get_image
+from discord import app_commands, ui
+from helpers.ai import edit_image
+from PIL import Image
 
 class Button(ui.Button):
     def __init__(self, label='Regenerate', disabled=False):
@@ -12,26 +13,28 @@ class Button(ui.Button):
         await interaction.response.defer()
         self.view.button_state('Regenerating...', True)
         await interaction.edit_original_response(view=self.view)
-        await self.view.draw_image(interaction)
+        await self.view.edit_image(interaction)
 
 class View(ui.View):
-    def __init__(self, prompt, message):
+    def __init__(self, prompt, image_bytes, message, api_content):
         super().__init__(timeout=180)
         self.prompt = prompt
+        self.image_bytes = image_bytes
         self.message = message
+        self.api_content = api_content
         self.add_item(Button())
 
     def button_state(self, label, disabled):
         self.clear_items()
         self.add_item(Button(label=label, disabled=disabled))
 
-    async def draw_image(self, interaction: discord.Interaction = None):
+    async def edit_image(self, interaction: discord.Interaction = None):
         try:
-            response = get_image(self.prompt)
-            if response and isinstance(response, bytes):
-                img_file = io.BytesIO(response)
+            remix_image = edit_image(self.image_bytes, self.api_content)
+            if remix_image and isinstance(remix_image, bytes):
+                img_file = io.BytesIO(remix_image)
                 file = discord.File(img_file, filename="image.png")
-                
+
                 if interaction:
                     await interaction.edit_original_response(attachments=[file])
                 else:
@@ -50,29 +53,47 @@ class View(ui.View):
             else:
                 await self.message.edit(view=self)
 
-class Draw(commands.Cog):
+class Remix(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="draw", description="Generate an image")
-    @app_commands.describe(prompt="The prompt for the image")
-    async def draw(self, interaction: discord.Interaction, prompt: str):
+    async def check_image_dimensions(self, interaction, image_bytes):
+        try:
+            image = Image.open(io.BytesIO(image_bytes))
+            width, height = image.size
+
+            if width < 320 or width > 1536 or height < 320 or height > 1536:
+                await interaction.response.send_message("Image dimensions must be between 320 and 1536 pixels.", ephemeral=True)
+                return False
+
+            return True
+        except Exception:
+            return False
+
+    @app_commands.command(name="remix", description="Remix an image")
+    @app_commands.describe(image="The image to remix", prompt="What changes you would like in the image?")
+    async def remix(self, interaction: discord.Interaction, image: discord.Attachment, prompt: str):
+        image_bytes = await image.read()
+
+        if not await self.check_image_dimensions(interaction, image_bytes):
+            return
+
         await interaction.response.defer(thinking=True)
 
         try:
-            response = get_image(prompt)
-            if response and isinstance(response, bytes):
-                img_file = io.BytesIO(response)
+            remix_image = edit_image(image_bytes, prompt)
+            if remix_image and isinstance(remix_image, bytes):
+                img_file = io.BytesIO(remix_image)
                 file = discord.File(img_file, filename="image.png")
-                
+
                 await interaction.followup.send(file=file)
-                
+
                 message_obj = await interaction.original_response()
-                await interaction.edit_original_response(view=View(prompt, message_obj))
+                await interaction.edit_original_response(view=View(prompt, image_bytes, message_obj, prompt))
             else:
                 await interaction.followup.send("Failed to generate image.", ephemeral=True)
         except Exception:
             await interaction.followup.send("An error occurred.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Draw(bot))
+    await bot.add_cog(Remix(bot))
