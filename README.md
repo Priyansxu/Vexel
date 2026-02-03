@@ -7,7 +7,6 @@
 - **/chat**: Start your chat with Ai!
 - **/draw**: Transform text into captivating images.
 - **/analyze**: Attach an image to analyse.
-- **/remix**: Attach an image to edit it.
 - **/wipe**: Wipe your chat history with Vexel.
 
 ## Getting Started
@@ -23,7 +22,7 @@
    ```
 
 3. **Configure your bot**:
- - Set up your `.env` with your Discord bot token, [Gemini Api key](https://aistudio.google.com/app/apikey) and [StabilityAi Api key](https://platform.stability.ai/account/keys).
+ - Set up your `.env` with your Discord bot token, [Gemini Api key](https://aistudio.google.com/app/apikey) and [Cloudflare Api key](https://dash.cloudflare.com/profile/api-tokens).
 
 ---
 
