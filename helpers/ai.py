@@ -97,30 +97,3 @@ def get_image(prompt):
     except Exception as e:
         print(f"Error in get_image: {e}")
         return None
-
-def edit_image(image_bytes, prompt):
-    try:
-        if not CF_API_TOKEN or not CF_ACCOUNT_ID:
-            raise ValueError("Missing Cloudflare credentials.")
-
-        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
-
-        response = requests.post(
-            f"{CF_API_HOST}/{CF_MODEL}",
-            headers={
-                "Authorization": f"Bearer {CF_API_TOKEN}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "prompt": prompt,
-                "image_b64": image_b64,
-                "strength": 0.35,
-                "guidance": 7.5,
-                "num_steps": 20
-            }
-        )
-        response.raise_for_status()
-        return response.content
-    except Exception as e:
-        print(f"Error in edit_image: {e}")
-        return None
