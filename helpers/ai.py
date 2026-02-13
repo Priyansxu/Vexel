@@ -68,21 +68,30 @@ def get_image(prompt):
     try:
         if not CF_API_TOKEN or not CF_ACCOUNT_ID:
             raise ValueError("Missing Cloudflare credentials.")
+
         url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/{CF_MODEL}"
-        form = {
-            "prompt": prompt,
-            "width": "1024",
-            "height": "1024",
-        }
+
         response = requests.post(
             url,
             headers={
                 "Authorization": f"Bearer {CF_API_TOKEN}",
             },
-            files=form
+            files={
+                "prompt": (None, prompt),
+                "width": (None, "1024"),
+                "height": (None, "1024"),
+            },
         )
+
         response.raise_for_status()
-        return response.content
+        data = response.json()
+
+        if not data.get("success"):
+            return None
+
+        image_base64 = data["result"]["image"]
+        return base64.b64decode(image_base64)
+
     except Exception as e:
         print(f"Error in get_image: {e}")
         return None
