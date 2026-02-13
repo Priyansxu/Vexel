@@ -16,12 +16,10 @@ CF_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
 CF_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
 
 GEMINI_MODEL = "gemini-2.5-flash-lite"
-CF_MODEL = "@cf/stabilityai/stable-diffusion-xl-base-1.0"
-CF_API_HOST = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run"
+CF_MODEL = "@cf/black-forest-labs/flux-2-klein-4b"
+CLIENT = genai.Client(api_key=GEMINI_API_KEY)
 
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-generation_config = types.GenerateContentConfig(
+GEN_CONFIG = types.GenerateContentConfig(
     temperature=1,
     top_p=0.95,
     top_k=64,
@@ -33,19 +31,15 @@ def get_response(conversation):
     try:
         if not GEMINI_API_KEY:
             raise ValueError("Missing Gemini API key.")
-
         message = conversation[-1]["parts"][0]["text"]
         history = conversation[:-1]
-
-        chat = client.chats.create(
+        chat = CLIENT.chats.create(
             model=GEMINI_MODEL,
-            config=generation_config,
+            config=GEN_CONFIG,
             history=history
         )
-
         response = chat.send_message(message)
         return response.text if response and hasattr(response, "text") else "Sorry, I couldn't generate a response."
-
     except Exception as e:
         print(f"Error in get_response: {e}")
         return "Uhg my brain hurts, can you say that again?"
@@ -54,19 +48,16 @@ async def recognize_image(image_data, prompt):
     try:
         if not GEMINI_API_KEY:
             raise ValueError("Missing Gemini API key.")
-
         image_format = imghdr.what(None, image_data)
         if not image_format:
             return "Failed to determine image format."
-
         image = Image.open(BytesIO(image_data))
         if image.mode == "RGBA":
             image = image.convert("RGB")
-
-        response = client.models.generate_content(
+        response = CLIENT.models.generate_content(
             model=GEMINI_MODEL,
             contents=[prompt, image],
-            config=generation_config
+            config=GEN_CONFIG
         )
         return response.text if response and hasattr(response, "text") else "Failed to generate a response."
     except Exception as e:
@@ -77,20 +68,18 @@ def get_image(prompt):
     try:
         if not CF_API_TOKEN or not CF_ACCOUNT_ID:
             raise ValueError("Missing Cloudflare credentials.")
-
+        url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/{CF_MODEL}"
+        form = {
+            "prompt": prompt,
+            "width": "1024",
+            "height": "1024",
+        }
         response = requests.post(
-            f"{CF_API_HOST}/{CF_MODEL}",
+            url,
             headers={
                 "Authorization": f"Bearer {CF_API_TOKEN}",
-                "Content-Type": "application/json",
             },
-            json={
-                "prompt": prompt,
-                "width": 1024,
-                "height": 1024,
-                "num_steps": 20,
-                "guidance": 7.5,
-            },
+            files=form
         )
         response.raise_for_status()
         return response.content
